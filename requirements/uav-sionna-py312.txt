@@ -1,0 +1,5 @@
+pip>=24
+setuptools>=70
+wheel>=0.43
+tensorflow==2.19.0
+sionna==1.2.1

@@ -1,27 +1,27 @@
-# Project Overview
+# UAV Communication Project Overview
 
-这是一个用于 `Obsidian` 的工程总览知识库仓库，核心目标是把现有的工程结构、知识卡片、主题图谱和成果图谱统一纳入 Git 管理，便于持续维护、版本回溯和 GitHub 备份。
+该仓库用于统一管理 `D:\UAV_Communication_GA` 下的工程总览内容，覆盖知识库、源码、参考文献、报告材料、阶段性输出和归档压缩包。
 
-## 仓库结构
+## 主要结构
 
-- `00_知识库总览.md`：知识库入口页
-- `05_成果图谱/`：按成果组织的总览与节点关系
-- `10_总索引/`：五大知识项的聚合索引
-- `15_主题图谱/`：主题级笔记与专题材料
-- `20_知识卡片/`：拆分后的细粒度知识卡片
-- `30_对话沉淀/`：阶段性对话与结论沉淀
-- `90_自动索引/`：自动生成的索引与元数据
-- `.obsidian/`：当前 vault 的 Obsidian 配置与插件配置
+- `obsidian_vault/`：Obsidian 知识库与图谱入口
+- `12/`：当前主工程代码、输出结果、报告与归档材料
+- `UAV_Communication_GA/`：历史代码工程
+- `12_UAV_Communication_GA/`：历史工程快照与输出
+- `key reference/`：下载文献、写作模板与关键证据链
+- `论文/`：论文草稿与写作文件
+- `scripts/`：环境初始化脚本
+- `tools/`：知识库与工程总览生成工具
+- `requirements/`：依赖说明
 
-## 管理约定
+## 管理原则
 
-- Git 仓库根目录就是当前 vault 根目录，便于 `Obsidian Git` 直接识别
-- 提交以知识库内容变更为主，`workspace.json` 等机器本地状态不纳入版本控制
-- 默认分支建议使用 `main`
-- 日常同步流程建议为：`Pull -> 编辑 -> Commit -> Push`
+- 上传完整工程内容，但排除虚拟环境、IDE 状态、缓存和临时文件
+- 超过 GitHub 普通文件限制的压缩包使用 Git LFS 管理
+- Obsidian 知识库仍然保留在 `obsidian_vault/` 下独立维护
 
-## 本地维护
+## 当前说明
 
-- 重建知识库索引：`python tools\\obsidian\\build_obsidian_vault.py`
-- 写入对话沉淀：`python tools\\obsidian\\capture_knowledge_note.py --title "中文标题" --stdin`
-- Obsidian 中启用 `Obsidian Git` 后，可直接用命令面板执行提交、拉取和推送
+- 远程仓库：`https://github.com/Crataeg/Project_Overview`
+- 默认分支：`main`
+- 已启用 Git LFS 追踪 `*.zip`
