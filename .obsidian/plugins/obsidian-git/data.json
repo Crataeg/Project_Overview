@@ -1,0 +1,17 @@
+{
+  "commitMessage": "vault backup: {{date}}",
+  "autoCommitMessage": "vault backup: {{date}}",
+  "pullBeforePush": true,
+  "disablePush": false,
+  "showStatusBar": true,
+  "showBranchStatusBar": true,
+  "showFileMenu": true,
+  "refreshSourceControl": true,
+  "refreshSourceControlTimer": 7000,
+  "autoPullOnBoot": false,
+  "autoBackupAfterFileChange": false,
+  "basePath": "",
+  "disablePopups": false,
+  "showErrorNotices": true,
+  "syncMethod": "merge"
+}

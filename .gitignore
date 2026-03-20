@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Obsidian local UI state
+.obsidian/workspace.json
+.obsidian/workspaces.json
+.obsidian/hotkeys.json
+
+# Plugin/runtime temporary files
+.git_credentials_input
+obsidian_askpass.sh
+
+# Plugin development/runtime caches
+.obsidian/plugins/*/node_modules/
+.obsidian/plugins/*/.rollup.cache/
