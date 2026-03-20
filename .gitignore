@@ -22,7 +22,6 @@ desktop.ini
 **/.ipynb_checkpoints/
 
 # Temporary and generated local files
-tmp_leo_emcsim_lab_remote/
 vendor_py37/
 12/__geatpy_tmp2/
 ~$*.doc
