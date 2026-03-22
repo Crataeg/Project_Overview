@@ -1,0 +1,1082 @@
+{
+  "generated_at": [
+    "2026-03-20T23:44:28"
+  ],
+  "专利自有": [
+    {
+      "label": "MATLAB卫星仿真工程",
+      "src": "D:\\一汽项目\\LEO_Sim",
+      "dest": "D:\\专利自有\\成果本身\\代码工程\\LEO_Sim",
+      "task_type": "成果",
+      "summary": "该节点保留 MATLAB 低轨卫星通信 EMC 仿真工程本体，是专利自有线的核心技术成果。",
+      "writing_value": "可直接支撑专利技术效果、系统结构、参数配置、最坏工况搜索与结果论证。",
+      "source_entries": [],
+      "file_count": 3835,
+      "top_files": [
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim_V5_Upgrade.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_2_SamplerOptimized.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_3_Route1_InfoGAN_NoPrior.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V7_0_Engineering.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V7_0_Engineering_Merged.m",
+        "成果本身\\代码工程\\LEO_Sim\\run_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\LEO_Sim\\run_V7_default.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim\\build_leo_emc_model.m",
+        "成果本身\\代码工程\\LEO_Sim\\v7proj\\classifyInterferenceTimeline.m",
+        "成果本身\\代码工程\\LEO_Sim\\v7proj\\classifyInterferenceTimeline_powerSampler.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim\\config_leo_emc.m",
+        "成果本身\\代码工程\\LEO_Sim\\v7proj\\defaultPowerAlignedSamplerCfg.m"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim_V5_Upgrade.m": "%% LEO StarNet EMC + GA(GAN) Worst-case + 3D Linked Dashboard (R2021a)  [V6.2 FULL]\n% 完全体增强点（在 V6.1 基础上“不改主仿真逻辑”，只补齐你 gen_set/train_lenet 的“图片生成链路”）：\n%  A) 生成 STFT 数据集图像（train/val/test, 4类：none/tone/pbnj/mod）\n%  B) 导出数据集样例拼图（montage）+ 测试集混淆矩阵\n%  C) 导出仿真时间轴关键时刻 STFT 图（用于PPT展示：干扰出现/保护/共信道等时刻）\n%  D) Dashboard 仍实时显示分类结果条形图 + 3D联动竖线 + 链路高亮\n%\n% 依赖：\n%  - Satellite Communications Toolbox\n%  - Deep Learning Toolbox\n%  - Optimization Toolbox (ga)\n%  - Image Processing Toolbox（你已安装：im2single/im2gray/imresize/montage等可用）\n%\n% 输出目录（默认）：\n%  - dataset_stft_r2021a/ (train/val/test 四类图片)\n%  - dataset_stft_r2021a/_exports/ (样例拼图、混淆矩阵、仿真关键帧STFT图)\n \nclear; clc; close all;\nrng(7);\n \nfprintf('============================================================\\n');\nfprintf('  LEO StarNet EMC | Worst-case Search (GA on GAN) | R2021a V6.2 FULL\\n');\nfprintf('============================================================\\n');\n \n%% =========================\n% PART 0: 参数区（可改）\n% =========================\nEpoch = datetime(2026,1,23,0,0,0,'TimeZone','UTC');   % 固定Epoch：不要用 now\n \nRe  = 6371e3;\nmu  = 3.986004418e14;\nc   = 299792458;\n \n% --- 星座 ---\nh      = 1200e3;\na      = Re + h;\necc    = 0.0;\nincDeg = 53;\n \nnumPlanes    = 12;\nsatsPerPlane = 8;\nF_phasing    = 1;\nNsat = numPlanes*satsPerPlane;\n \n% --- 仿真时长：一圈轨道 ---\nT_orbit = 2*pi*sqrt(a^3/mu);\nsample_time = 10;     % 秒\nsim_start = Epoch;\nsim_stop  = sim_start + seconds(T",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_2_SamplerOptimized.m": "%% LEO StarNet EMC + GA(GAN) Worst-case + 3D Linked Dashboard (R2021a)  [V6.2 FULL]\n% 完全体增强点（在 V6.1 基础上“不改主仿真逻辑”，只补齐你 gen_set/train_lenet 的“图片生成链路”）：\n%  A) 生成 STFT 数据集图像（train/val/test, 4类：none/tone/pbnj/mod）\n%  B) 导出数据集样例拼图（montage）+ 测试集混淆矩阵\n%  C) 导出仿真时间轴关键时刻 STFT 图（用于PPT展示：干扰出现/保护/共信道等时刻）\n%  D) Dashboard 仍实时显示分类结果条形图 + 3D联动竖线 + 链路高亮\n%\n% 依赖：\n%  - Satellite Communications Toolbox\n%  - Deep Learning Toolbox\n%  - Optimization Toolbox (ga)\n%  - Image Processing Toolbox（你已安装：im2single/im2gray/imresize/montage等可用）\n%\n% 输出目录（默认）：\n%  - dataset_stft_r2021a/ (train/val/test 四类图片)\n%  - dataset_stft_r2021a/_exports/ (样例拼图、混淆矩阵、仿真关键帧STFT图)\n \nclear; clc; close all;\nrng(7);\n \nfprintf('============================================================\\n');\nfprintf('  LEO StarNet EMC | Worst-case Search (GA on GAN) | R2021a V6.2 FULL\\n');\nfprintf('============================================================\\n');\n \n%% =========================\n% PART 0: 参数区（可改）\n% =========================\nEpoch = datetime(2026,1,23,0,0,0,'TimeZone','UTC');   % 固定Epoch：不要用 now\n \nRe  = 6371e3;\nmu  = 3.986004418e14;\nc   = 299792458;\n \n% --- 星座 ---\nh      = 1200e3;\na      = Re + h;\necc    = 0.0;\nincDeg = 53;\n \nnumPlanes    = 12;\nsatsPerPlane = 8;\nF_phasing    = 1;\nNsat = numPlanes*satsPerPlane;\n \n% --- 仿真时长：一圈轨道 ---\nT_orbit = 2*pi*sqrt(a^3/mu);\nsample_time = 10;     % 秒\nsim_start = Epoch;\nsim_stop  = sim_start + seconds(T",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_3_Route1_InfoGAN_NoPrior.m": "%% LEO StarNet EMC + GA(GAN) Worst-case + 3D Linked Dashboard (R2021a)  [V6.2 FULL]\n% 完全体增强点（在 V6.1 基础上“不改主仿真逻辑”，只补齐你 gen_set/train_lenet 的“图片生成链路”）：\n%  A) 生成 STFT 数据集图像（train/val/test, 4类：none/tone/pbnj/mod）\n%  B) 导出数据集样例拼图（montage）+ 测试集混淆矩阵\n%  C) 导出仿真时间轴关键时刻 STFT 图（用于PPT展示：干扰出现/保护/共信道等时刻）\n%  D) Dashboard 仍实时显示分类结果条形图 + 3D联动竖线 + 链路高亮\n%\n% 依赖：\n%  - Satellite Communications Toolbox\n%  - Deep Learning Toolbox\n%  - Optimization Toolbox (ga)\n%  - Image Processing Toolbox（你已安装：im2single/im2gray/imresize/montage等可用）\n%\n% 输出目录（默认）：\n%  - dataset_stft_r2021a/ (train/val/test 四类图片)\n%  - dataset_stft_r2021a/_exports/ (样例拼图、混淆矩阵、仿真关键帧STFT图)\n \nclear; clc; close all;\nrng(7);\n \nfprintf('============================================================\\n');\nfprintf('  LEO StarNet EMC | Worst-case Search (GA on GAN) | R2021a V6.2 FULL\\n');\nfprintf('============================================================\\n');\n \n%% =========================\n% PART 0: 参数区（可改）\n% =========================\nEpoch = datetime(2026,1,23,0,0,0,'TimeZone','UTC');   % 固定Epoch：不要用 now\n \nRe  = 6371e3;\nmu  = 3.986004418e14;\nc   = 299792458;\n \n% --- 星座 ---\nh      = 1200e3;\na      = Re + h;\necc    = 0.0;\nincDeg = 53;\n \nnumPlanes    = 12;\nsatsPerPlane = 8;\nF_phasing    = 1;\nNsat = numPlanes*satsPerPlane;\n \n% --- 仿真时长：一圈轨道 ---\nT_orbit = 2*pi*sqrt(a^3/mu);\nsample_time = 10;     % 秒\nsim_start = Epoch;\nsim_stop  = sim_start + seconds(T"
+      }
+    },
+    {
+      "label": "基础卫星链路脚本",
+      "src": "D:\\一汽项目\\satellite.m",
+      "dest": "D:\\专利自有\\成果本身\\代码工程\\satellite.m",
+      "task_type": "成果",
+      "summary": "该脚本提供更基础的卫星链路通信仿真入口，可作为专利技术方案的底层算法说明。",
+      "writing_value": "适合写成“基础通信链路模型”或“仿真验证底座”章节。",
+      "source_entries": [],
+      "file_count": 1,
+      "top_files": [
+        "成果本身\\代码工程\\satellite.m"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\satellite.m": "function model = emcBuildLinkModel(name, numSteps, dt, ...\n    visU_all, visG_all, azU, elU, rU, rrU, elG, rG, ...\n    pS_mW, totCCI, satChan, pIself_mW, pJsum_base_mW, ...\n    TxP_J_base_dBm, AJ_DelaySec, AJ_NullDepth_dB, fc_Hz, BW, p_n, Gisl, outageThrMbps, strengthOffset_dB)\n%EMCBUILDLINKMODEL Pack link model inputs.\n\n    model = struct();\n    model.Name = name;\n    model.numSteps = numSteps;\n    model.dt = dt;\n    model.visU_all = visU_all;\n    model.visG_all = visG_all;\n    model.azU = azU;\n    model.elU = elU;\n    model.rU = rU;\n    model.rrU = rrU;\n    model.elG = elG;\n    model.rG = rG;\n    model.pS_mW = pS_mW;\n    model.totCCI = totCCI;\n    model.satChan = satChan;\n    model.pIself_mW = pIself_mW;\n    model.pJsum_base_mW = pJsum_base_mW;\n    model.TxP_J_base_dBm = TxP_J_base_dBm;\n    model.AJ_DelaySec = AJ_DelaySec;\n    model.AJ_NullDepth_dB = AJ_NullDepth_dB;\n    model.fc_Hz = fc_Hz;\n    model.c = 299792458;\n    model.BW = BW;\n    model.p_n = p_n;\n    model.Gisl = Gisl;\n    model.OutageThr_Mbps = outageThrMbps;\n    model.SignalStrengthOffset_dB = strengthOffset_dB;\n    model.BLK = 1024;\nend\n"
+      }
+    },
+    {
+      "label": "试验室卫星EMC仿真技术报告",
+      "src": "D:\\一汽项目\\试验室环境下低轨卫星通信系统EMC仿真技术",
+      "dest": "D:\\专利自有\\成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术",
+      "task_type": "成果",
+      "summary": "该目录包含专利自有线所需的技术报告、标准和论文支撑，是把仿真工程转成专利方案的重要报告层材料。",
+      "writing_value": "有助于提炼“为何这样建模、为何这样定义测试链路、为何这样设计指标”的论证语言。",
+      "source_entries": [],
+      "file_count": 5,
+      "top_files": [
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\最终稿_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\论文\\Anti-Jamming_Resilient_LEO_Satellite_Swarms.pdf",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\论文\\LEO_Satellite_Communication_Simulation_Framework_for_Connected_Vehicles.pdf"
+      ],
+      "previews": {
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\最终稿_试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n1 国内外研究现状\n1.1概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术(1).docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n国内外研究现状\n1.1 概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究\n1. 论文选题依据\n1.1 论文选题的意义\n低轨卫星通信系统作为空天地海一体化信息网络的重要组成部分，正迎来前所未有的发展机遇。以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道[1]。然而，这种爆炸式增长也带来了严峻的电磁兼容性挑战。\n有限的轨道资源和频谱资源导致不同系统之间存在着严重的同频干扰风险[2]。低轨卫星星座具有卫星数量多、轨道构型复杂、星地相对位置动态变化等特点，使得传统的基于确定性场景的干扰分析方法难以高效、准确地评估其系统级EMC性能[3]。\n在此背景下，试验室环境下的EMC仿真技术成为在系统实际部署前进行充分验证与优化的关键手段。本研究旨在融合确定性仿真与概率性统计方法，构建一套高效、高精度的低轨卫星通信系统EMC仿真与测试评估体系。\n1.2 国内外研究现状\n1.2.1 国际研究进展\n在国际研究层面，低轨卫星通信系统的EMC研究已经从单一的链路分析发展为系统级的仿真与评估。ITU-R等国际标准化组织制定了一系列技术标准和建议书，为基于空间概率统计的干扰分析方法提供了理论基础[4]。\n在仿真平台建设方面，Visualyse、OPNET等专业仿真工具被广泛应用于卫星通信系统的EMC分析[5]。这些平台提供了完整的物理层到网络层仿真能力，支持大规模星座的建模与仿真。特别值得一提的是，丰田公司开发的集成SUMO、OS³和OMNEST的仿真框架，能够有效评估车联网场景下LEO卫星通信的端到端性能[6]。\n1.2.2 国内研究现状\n国内研究机构在低轨卫星通信系统EMC领域取得了显著进展。在频谱共用研究方面，中国联通研究院系统分析了5G与低轨卫星系统的频谱共享特性，提出了基于空间隔离和功率控制的干扰规避方案[7]。华北电力大学基于Visualyse平台，对26GHz频段5G基站与卫星间业务的兼容性进行了仿真验证[8]。\n在仿真方法创新方面，吕俊璋等人对空间概率统计方法进行了重要改进，提出了考虑网格尺寸精度复杂度的评估方法，创新性地发展了联合低轨卫星概率密度分布的自适应隔离角技术[9]。\n在硬件平台建设方面，国内主机厂发挥了重要作用。吉利科技集团开发的高度集成化车载卫星通信系统[10]，集成了人机交互设备、基带处理模块与多频段卫星天线。重庆长安科技有限公司研发的可插拔式卫星通讯终端[11]采用圆极化全向天线设计，通过快速插拔接口实现车载与离场景的灵活使用。\n2.\n技术\n研究方案\n2.1 研究目标及研究内容"
+      }
+    },
+    {
+      "label": "一汽项目_卫星EMC原型工程与数据集",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\专利自有\\成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集",
+      "task_type": "成果",
+      "summary": "该节点汇总一汽项目中的 Simulink 原型工程、根目录系统模型、STFT 数据集和训练模型，是专利自有线继承更早期工程实现的重要补充。",
+      "writing_value": "可支撑专利中对原型验证链、识别模块、数据集构建与训练依据的补充说明。",
+      "source_entries": [
+        "LEO_EMC_Sim",
+        "dataset_stft_r2021a",
+        "GAN_Jammer_R2021a.mat",
+        "lenet_stft_model_r2021a.mat",
+        "build_LEO_EMC_Sim.m",
+        "LEO_EMC_System.slx",
+        "LEO_EMC_System.slx.autosave",
+        "LEO_EMC_System.slxc",
+        "slprj"
+      ],
+      "file_count": 3759,
+      "top_files": [
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\build_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\build_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\cfo_comp.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\interf_gen.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\LEO_Sim_V1.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\preamble_insert.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\run_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\LEO_EMC_Sim_说明报告.docx",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\LEO_EMC_仿真技术_主流方法与文献支撑_说明报告.docx",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\.vscode\\settings.json",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\.vscode\\tasks.json",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\dataset_stft_r2021a\\_exports\\confusion_test.png"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\build_LEO_EMC_Sim.m": "function build_LEO_EMC_Sim()\n% LEO EMC 通信视角 Simulink 自动建模脚本（Comm Toolbox + Stateflow 写 Script）\n% R2021a兼容：MATLAB Function block 在Simulink层面可能表现为SubSystem；需通过 Stateflow.EMChart.Script 写入代码\n\nassert(license('test','communication_toolbox')==1, \"Communications Toolbox 未授权\");\nassert(license('test','stateflow')==1, \"Stateflow 未授权（MATLAB Function block 需要）\");\n\nmodel = 'LEO_EMC_Sim_Simulink';\nif bdIsLoaded(model); close_system(model,0); end\nif exist([model '.slx'],'file'); delete([model '.slx']); end\n\nnew_system(model);\nopen_system(model);\n\ncfg = defaultCfg();\nassignin('base','cfg',cfg);\n\nset_param(model,'Solver','FixedStepDiscrete');\nset_param(model,'FixedStep', num2str(cfg.sim.Ts));\nset_param(model,'StopTime',  cfg.sim.StopTime);\n\n% 顶层子系统\nadd_block('built-in/Subsystem',[model '/TX'],          'Position',[80 80 260 260]);\nadd_block('built-in/Subsystem',[model '/Channel_EMC'], 'Position',[320 80 540 260]);\nadd_block('built-in/Subsystem',[model '/RX'],          'Position',[600 80 820 260]);\nadd_block('built-in/Subsystem',[model '/Metrics'],     'Position',[880 80 1120 260]);\n\nbuildTX([model '/TX']);\nbuildChannelEMC([model '/Channel_EMC']);\nbuildRX([model '/RX']);\nbuildMetrics([model '/Metrics']);\n\nset_param(model,'SimulationCommand','update');\n\n% 顶层连线\nadd_line(model,'TX/1','Channel_EMC/1','autorouting','on');\nadd_line(model,'Channel_EMC/1','RX/1','autorouting','on');\nadd_line(model,'RX/1",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\build_LEO_EMC_Sim.m": "function build_LEO_EMC_Sim()\n% build_LEO_EMC_Sim\n% 一键生成 Simulink 模型：LEO卫星通信 EMC（通信视角）仿真骨架\n%\n% 依赖（推荐）：\n%  - Simulink\n%  - Communications Toolbox（用于QPSK调制/解调、卷积码/Viterbi、误码统计等模块）\n%\n% 生成：\n%  - LEO_EMC_Sim_Simulink.slx\n\nmodel = 'LEO_EMC_Sim_Simulink';\nif bdIsLoaded(model); close_system(model,0); end\nif exist([model '.slx'],'file'); delete([model '.slx']); end\n\nnew_system(model);\nopen_system(model);\n\n% ---------- 全局参数（写入 Base Workspace，方便外行只改这里） ----------\ncfg = defaultCfg();\nassignin('base','cfg',cfg);\n\n% ---------- 画布基础设置 ----------\nset_param(model,'StopTime','cfg.sim.StopTime');\nset_param(model,'Solver','FixedStepDiscrete');\nset_param(model,'FixedStep','cfg.sim.Ts');\n\n% ---------- 添加子系统：TX / Channel+EMC / RX / Metrics ----------\nadd_block('built-in/Subsystem',[model '/TX'], 'Position',[80 80 240 240]);\nadd_block('built-in/Subsystem',[model '/Channel_EMC'], 'Position',[320 80 520 240]);\nadd_block('built-in/Subsystem',[model '/RX'], 'Position',[600 80 760 240]);\nadd_block('built-in/Subsystem',[model '/Metrics'], 'Position',[840 80 1020 240]);\n\n% 顶层连接：TX -> Channel_EMC -> RX -> Metrics\n\n% ---------- 构建 TX ----------\nbuildTX([model '/TX']);\n\n% ---------- 构建 Channel + EMC ----------\nbuildChannelEMC([model '/Channel_EMC']);\n\n% ---------- 构建 RX ----------\nbuildRX([model '/RX']);\n\n% ---------- 构建 Metrics ----------\nbuildMetrics([model '/Metrics']);\nadd_line(model,'TX/1','Channel_EMC/1','",
+        "成果本身\\代码工程\\一汽项目_卫星EMC原型工程与数据集\\LEO_EMC_Sim\\cfo_comp.m": "function y = cfo_comp(r)\ncfg = evalin('base','cfg');\n\nrx = r(:);\nN = length(rx);\nRs = cfg.phy.Rs;\nt = (0:N-1).';\n\nif cfg.rx.cfoMethod == 1\n    cfo_hat = cfg.leo.fD_Hz;\nelse\n    L = cfg.phy.preambleHalfLen;\n    if N < 2*L\n        cfo_hat = 0;\n    else\n        r1 = rx(1:L);\n        r2 = rx(L+1:2*L);\n        P = sum(conj(r1).*r2);\n        cfo_hat = angle(P) * Rs / (2*pi*L);\n    end\nend\n\ny = rx .* exp(-1j*2*pi*cfo_hat*t/Rs);\nend\n"
+      }
+    },
+    {
+      "label": "卫星通信专利对标",
+      "src": "D:\\一汽项目\\车载卫星通信系统",
+      "dest": "D:\\专利自有\\参考文献\\专利对标\\车载卫星通信系统",
+      "task_type": "参考",
+      "summary": "该目录提供车载卫星通信相关现有专利方案，可用于界定自有专利的新颖点和差异点。",
+      "writing_value": "适合在撰写背景技术、现有方案不足与创新点时直接引用。",
+      "source_entries": [],
+      "file_count": 1,
+      "top_files": [
+        "参考文献\\专利对标\\车载卫星通信系统\\车载卫星通信系统及车辆.pdf"
+      ],
+      "previews": {
+        "参考文献\\专利对标\\车载卫星通信系统\\车载卫星通信系统及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "主机厂专利与EMC对标资料",
+      "src": "D:\\一汽项目\\专利",
+      "dest": "D:\\专利自有\\参考文献\\专利对标\\主机厂专利与EMC资料",
+      "task_type": "参考",
+      "summary": "该目录整理了一汽、吉利、比亚迪、赛力斯、长安等主机厂的专利和 EMC 相关资料。",
+      "writing_value": "可以支持竞品对标、已有技术路线分析以及专利布局比较。",
+      "source_entries": [],
+      "file_count": 21,
+      "top_files": [
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\一汽\\一汽EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\卫星通信方法、存储介质、控制器及车辆 (1).pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\卫星通信方法、存储介质、控制器及车辆.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\长安\\卫星通讯终端及车辆 (1).pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\吉利EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\长安\\基于低轨卫星的车载通信方法、系统及车载控制设备.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\基于卫星的通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\一汽\\基于卫星通信的车联网数据压缩方法、装置、设备和介质.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\比亚迪EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\赛力斯\\赛力斯EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\赛力斯\\车载卫星通信方法、装置、设备及存储介质.pdf"
+      ],
+      "previews": {
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\一汽\\一汽EMC相关.docx": "专利一：《基于卫星通信的车联网数据压缩方法、装置、设备和介质》\n此专利的核心在于\n数据压缩算法和通信策略\n，以降低卫星通信流量成本。其重点并非硬件设计，因此\n直接和明确的EMC设计内容非常有限\n。\n1. 间接相关：系统架构中隐含的多射频模块共存\n位置\n：说明书第[0003]段 / 文件第4页\n相关原文\n：\n“该终端系统涵盖主机模块、无线通信模块、供电模块和天线模块。其中，无线通信模块包含4G/5G通信模组和低轨道卫星通信模组...”\n分析\n：该描述勾勒出一个包含\n蜂窝通信模组\n和\n卫星通信模组\n的硬件系统架构。多个射频模块在车辆狭小空间内共存并同时工作，是典型的EMC应用场景，其稳定运行的前提是进行了良好的EMC设计（如屏蔽、滤波、隔离），以避免相互干扰。虽然专利未明说，但这是方案可行的",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\卫星通信方法、存储介质、控制器及车辆 (1).pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    }
+  ],
+  "专利一汽": [
+    {
+      "label": "一汽专利文本与附图",
+      "src": "D:\\工程总览\\tmp_leo_emcsim_lab_remote",
+      "dest": "D:\\专利一汽\\成果本身\\专利文本与附图\\专利一汽",
+      "task_type": "成果",
+      "summary": "该目录包含一汽专利项目的交底书、附图清单、SVG/PNG 附图和压缩包，是当前最直接的专利成果载体。",
+      "writing_value": "可直接形成专利说明书正文、附图说明、流程说明和实施方式。",
+      "source_entries": [],
+      "file_count": 7,
+      "top_files": [
+        "成果本身\\专利文本与附图\\专利一汽\\20250912_交底书模板_发明及实用新型.docx",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_交底书_第三版_一种卫星通信天线的实验室环境模拟测试系统及方法.docx",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_附图清单_优化重绘版_可下载.docx",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_附图清单_第三版_卫星通信天线的实验室环境模拟测试系统_重新生成可下载版.docx",
+        "成果本身\\专利文本与附图\\专利一汽\\README.md",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_Visio附图_卫星通信天线实验室环境模拟测试系统_10图_SVG_PNG.zip",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_专利附图_优化重绘版_SVG_PNG.zip"
+      ],
+      "previews": {
+        "成果本身\\专利文本与附图\\专利一汽\\20250912_交底书模板_发明及实用新型.docx": "注\n1\n：\n交底文件应包括\n《专利交底书》\n（Word文件）、\n《专利基础信息统计表》\n（Excel文件）及可编辑的\n附图（表）原文件\n，发明人发起专利申请流程时需一并提报。\n注\n2\n：\n专利文件命名规则：\n交底书命名规则：\n“\n日期”+“交底书”+“_”+发明创造/外观设计名称\n”",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_交底书_第三版_一种卫星通信天线的实验室环境模拟测试系统及方法.docx": "注\n1\n：\n交底文件应包括\n《专利交底书》\n（Word文件）、\n《专利基础信息统计表》\n（Excel文件）及可编辑的\n附图（表）原文件\n，发明人发起专利申请流程时需一并提报。\n注\n2\n：\n专利文件命名规则：\n交底书命名规则：\n“\n日期”+“交底书”+“_”+发明创造/外观设计名称\n”",
+        "成果本身\\专利文本与附图\\专利一汽\\20260318_附图清单_优化重绘版_可下载.docx": "卫星通信天线的实验室环境模拟测试系统\n附图清单（优化重绘版）\n配套《一种卫星通信天线的实验室环境模拟测试系统及方法》交底书使用。\n说明：本版按照黑白线条专利附图规范进行重绘建议，统一采用部件编号一致的表达方式。\n统一附图标记建议：1-实验室环境建模模块/实验室环境；2-源；3-卫星通信天线；4-空间采样区域；5-三维电磁求解模块；6-等效接收信号反演模块；7-灵敏度判定模块；8-报告输出与优化模块；21-源极化方向；31-安装载体/支架；41-包络面；42-采样点；43-采样线；44-天线相位中心。\n公式统一建议：Peq(dBm) = Erep(dBuV/m) - AF(dB/m) + Kconv(dB) - Lsys(dB)；Margin(dB) = Peq(dBm) - Ssens(dBm)。\n图号\n图名\n图中核心内容\n绘制要求\n备注\n图1\n系统总体架构图\n环境建模、源建模、空间采样、三维电磁求解、等效接收信号反演、灵敏度判定、报告输出与优化之间的连接关系。\nVisio框图；箭头体现处理顺序；可在连线旁标注输入/输出。\n建议作为摘要附图。\n图2\n实验室环境模拟测试总体布局图"
+      }
+    },
+    {
+      "label": "CST卫星EMC支撑报告",
+      "src": "D:\\一汽项目\\试验室环境下低轨卫星通信系统EMC仿真技术",
+      "dest": "D:\\专利一汽\\成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术",
+      "task_type": "成果",
+      "summary": "该目录提供专利一汽线的技术报告、标准和论文支撑，是从仿真思路过渡到专利论证的报告层材料。",
+      "writing_value": "可用于解释交底书中的测试环境、场强换算、判定逻辑和输出页面设计依据。",
+      "source_entries": [],
+      "file_count": 5,
+      "top_files": [
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\最终稿_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\论文\\Anti-Jamming_Resilient_LEO_Satellite_Swarms.pdf",
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\论文\\LEO_Satellite_Communication_Simulation_Framework_for_Connected_Vehicles.pdf"
+      ],
+      "previews": {
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\最终稿_试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n1 国内外研究现状\n1.1概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备",
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术(1).docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n国内外研究现状\n1.1 概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备",
+        "成果本身\\支撑报告\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究\n1. 论文选题依据\n1.1 论文选题的意义\n低轨卫星通信系统作为空天地海一体化信息网络的重要组成部分，正迎来前所未有的发展机遇。以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道[1]。然而，这种爆炸式增长也带来了严峻的电磁兼容性挑战。\n有限的轨道资源和频谱资源导致不同系统之间存在着严重的同频干扰风险[2]。低轨卫星星座具有卫星数量多、轨道构型复杂、星地相对位置动态变化等特点，使得传统的基于确定性场景的干扰分析方法难以高效、准确地评估其系统级EMC性能[3]。\n在此背景下，试验室环境下的EMC仿真技术成为在系统实际部署前进行充分验证与优化的关键手段。本研究旨在融合确定性仿真与概率性统计方法，构建一套高效、高精度的低轨卫星通信系统EMC仿真与测试评估体系。\n1.2 国内外研究现状\n1.2.1 国际研究进展\n在国际研究层面，低轨卫星通信系统的EMC研究已经从单一的链路分析发展为系统级的仿真与评估。ITU-R等国际标准化组织制定了一系列技术标准和建议书，为基于空间概率统计的干扰分析方法提供了理论基础[4]。\n在仿真平台建设方面，Visualyse、OPNET等专业仿真工具被广泛应用于卫星通信系统的EMC分析[5]。这些平台提供了完整的物理层到网络层仿真能力，支持大规模星座的建模与仿真。特别值得一提的是，丰田公司开发的集成SUMO、OS³和OMNEST的仿真框架，能够有效评估车联网场景下LEO卫星通信的端到端性能[6]。\n1.2.2 国内研究现状\n国内研究机构在低轨卫星通信系统EMC领域取得了显著进展。在频谱共用研究方面，中国联通研究院系统分析了5G与低轨卫星系统的频谱共享特性，提出了基于空间隔离和功率控制的干扰规避方案[7]。华北电力大学基于Visualyse平台，对26GHz频段5G基站与卫星间业务的兼容性进行了仿真验证[8]。\n在仿真方法创新方面，吕俊璋等人对空间概率统计方法进行了重要改进，提出了考虑网格尺寸精度复杂度的评估方法，创新性地发展了联合低轨卫星概率密度分布的自适应隔离角技术[9]。\n在硬件平台建设方面，国内主机厂发挥了重要作用。吉利科技集团开发的高度集成化车载卫星通信系统[10]，集成了人机交互设备、基带处理模块与多频段卫星天线。重庆长安科技有限公司研发的可插拔式卫星通讯终端[11]采用圆极化全向天线设计，通过快速插拔接口实现车载与离场景的灵活使用。\n2.\n技术\n研究方案\n2.1 研究目标及研究内容"
+      }
+    },
+    {
+      "label": "一汽项目_试验室仿真支撑简版资料",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\专利一汽\\成果本身\\支撑报告\\一汽项目补充试验室仿真材料",
+      "task_type": "成果",
+      "summary": "该节点收集一汽项目根目录中的试验室仿真技术定稿、一页纸与两页纸版本，便于专利线在交付口径、简版汇报和专利支撑材料之间切换。",
+      "writing_value": "适合在专利申报、项目汇报和对外说明时快速抽取不同粒度的技术表述。",
+      "source_entries": [
+        "试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+        "试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+        "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "lab_emc_sim_one_page.docx",
+        "lab_emc_sim_two_page.docx",
+        "最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx"
+      ],
+      "file_count": 9,
+      "top_files": [
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\lab_emc_sim_one_page.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\lab_emc_sim_two_page.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx"
+      ],
+      "previews": {
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\lab_emc_sim_one_page.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究方案（一页纸）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n背景与目标\n• 解决实验室测试难以复现真实在轨/典型应用场景多源耦合干扰的问题，降低“实验室-在轨”偏差。\n• 形成“实测-建模-仿真-智能生成-验证”闭环，实现通信性能与EMC（骚扰/抗扰度）联合评估与可移植用例生成。\n关键研究内容\n• 实验测量：微波暗室/GNSS暗箱采集链路指标与干扰响应，形成基准数据集。\n• 模型抽象：拟合接口函数/节点库，完成仿真参数对齐与外推。\n• EMC仿真：集成骚扰测量（辐射杂散/辐射/传导）与抗扰度（辐射、BCI、ESD等），嵌入标准限值与性能判据。\n• 智能用例：干扰特征库 + GA/GAN 生成最恶劣/罕见场景，驱动单星与多星组网压力测试。\n• 闭环验证：仿真-实测对标，输出用例库、评分与防护建议。\n研究内容示意图\n图1 研究内容示意图\n预期成果\n• “干扰-响应”实验基准数据集 + 接口函数/节点库。\n• 面向标准的EMC/通信联合仿真平台与可复用测试流程。\n• 典型与极限干扰用例库（含生成方法）及评估报告模板/防护建议。",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\lab_emc_sim_two_page.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究方案（两页纸）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n1 背景与研究意义\n低轨卫星通信系统快速发展，通信抗干扰性能与电磁兼容性（EMC）评估成为保障系统可靠性的关键环节。\n传统实验室测试难以复现“多干扰源耦合+动态组网”综合效应，导致测试结果与在轨性能存在偏差。\n亟需将行业标准要求（骚扰/抗扰度限值、性能判据）与通信性能指标统一到可复用的仿真-实测闭环流程中。\n2 研究目标\n构建覆盖“单星链路-多星动态组网”的实验室EMC/通信联合仿真与评估方法。\n建立贴近典型应用场景的干扰模型与干扰特征库，并实现极限压力用例的智能生成。\n形成可移植的测试用例生成方法、标准化评估报告与防护建议，支撑工程正向设计与标准完善。\n3 研究内容与关键技术\n实验测量与数据集：构建微波暗室/GNSS暗箱测试环境，获取链路指标与不同干扰条件下的“干扰-响应”数据集。\n模型抽象与接口校正：将实测数据拟合为接口函数/节点库，使仿真节点行为与实测对齐，并具备一定外推能力。\nEMC仿真模块集成：基于行业标准，集成骚扰测量仿真（辐射杂散、辐射骚扰、传导骚扰）与抗扰度试验仿真（辐射抗扰度、BCI、ESD等），嵌入限值与性能判据。\n智能用例生成与闭环验证：建立干扰特征库，结合遗传算法（GA）与生成对抗网络（GAN）生成最恶劣/罕见干扰场景；在仿真平台中动态注入干扰并与实测对标，输出用例库与防护建议。\n图1 关键技术说明图（两页纸附图）\n4 技术路线与实施计划\n阶段1（0-3个月）：搭建实验室环境与测试链路；完成典型干扰源配置与基准数据采集。",
+        "成果本身\\支撑报告\\一汽项目补充试验室仿真材料\\最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n1 国内外研究现状\n1.1概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备"
+      }
+    },
+    {
+      "label": "一汽项目_专利图示素材与模板",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\专利一汽\\成果本身\\专利文本与附图\\一汽项目补充素材",
+      "task_type": "成果",
+      "summary": "该节点保留一汽项目根目录中的图片、模板和临时文档，可作为专利附图、版式与补充素材归档位。",
+      "writing_value": "有利于后续整理附图、版式样例、专利说明书封面或汇报图示素材。",
+      "source_entries": [
+        "69bb216e-37c8-4c63-a17d-92b18d2c789d.png",
+        "6bd2a610-225a-470a-ba27-3a1f3e3b86ad.jpg",
+        "微信图片_20260122141540_92_31.png",
+        "模板.docx",
+        "新建 DOCX 文档.docx"
+      ],
+      "file_count": 5,
+      "top_files": [
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\新建 DOCX 文档.docx",
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\模板.docx",
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\69bb216e-37c8-4c63-a17d-92b18d2c789d.png",
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\微信图片_20260122141540_92_31.png",
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\6bd2a610-225a-470a-ba27-3a1f3e3b86ad.jpg"
+      ],
+      "previews": {
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\新建 DOCX 文档.docx": "下面给你一份\n面向“当前代码（LEO StarNet EMC | GA on GAN | R2021a V6.1）”的研究报告\n（可直接拿去组会/交作业）。\n说明：我这边\n无法直接打开你之前提到的 docx\n（系统提示这些上传文件已过期），所以报告中**“文档对标/引用”部分**我会按工程常见写法给出可执行的对标框架；如果你把 docx 重新上传，我可以再把“标准条款/参数表/指标定义”逐条补齐并加上对应页码引用。\n低轨星座通信链路与电磁对抗（EMC）仿真研究报告\n项目名称\n：LEO StarNet EMC | Worst-case Search (GA on GAN) | MATLAB R2021a\n代码基线\n：V6.1（含 96 星座、全轨道周期仿真、GA+GAN 最劣干扰搜索、3D Viewer + Dashboard 联动）\n环境\n：MATLAB R2021a（9.10）+ Simulink 10.3 + 5G Toolbox 2.2 + Deep Learning Toolbox 14.2 + Global Optimization Toolbox 4.5 等\n摘要\n本研究构建了一套可在 MATLAB R2021a 稳定运行的\n低轨星座通信仿真与电磁对抗评估平台\n。系统以固定 Epoch 的\nsatelliteScenario",
+        "成果本身\\专利文本与附图\\一汽项目补充素材\\模板.docx": "整车电磁兼容系统技术研究及应用\n新能源汽车关键系统电磁兼容仿真模型与试验验证研究方案\n北京交通大学电磁兼容实验室\n目录\n1 项目概述\n3\n2 项目目标\n3\n3 项目周期计划\n3\n4.技术实施方案\n4\n4.1技术路线\n4\n4.2具体实施内容\n4\n4.2.1 电驱动系统传导发射机理研究与噪声路径分析\n5"
+      }
+    },
+    {
+      "label": "卫星通信专利对标",
+      "src": "D:\\一汽项目\\车载卫星通信系统",
+      "dest": "D:\\专利一汽\\参考文献\\专利对标\\车载卫星通信系统",
+      "task_type": "参考",
+      "summary": "该目录包含车载卫星通信系统及车辆相关专利，可用作一汽专利项目的对标资料。",
+      "writing_value": "有助于提炼背景技术和创新点边界。",
+      "source_entries": [],
+      "file_count": 1,
+      "top_files": [
+        "参考文献\\专利对标\\车载卫星通信系统\\车载卫星通信系统及车辆.pdf"
+      ],
+      "previews": {
+        "参考文献\\专利对标\\车载卫星通信系统\\车载卫星通信系统及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "主机厂专利与EMC对标资料",
+      "src": "D:\\一汽项目\\专利",
+      "dest": "D:\\专利一汽\\参考文献\\专利对标\\主机厂专利与EMC资料",
+      "task_type": "参考",
+      "summary": "该目录提供多家主机厂相关专利与 EMC 材料，是专利布局对照的重要参考。",
+      "writing_value": "可用于专利检索、对标与撰写中的现有技术比较。",
+      "source_entries": [],
+      "file_count": 21,
+      "top_files": [
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\一汽\\一汽EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\卫星通信方法、存储介质、控制器及车辆 (1).pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\卫星通信方法、存储介质、控制器及车辆.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\长安\\卫星通讯终端及车辆 (1).pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\吉利EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\长安\\基于低轨卫星的车载通信方法、系统及车载控制设备.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\基于卫星的通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\一汽\\基于卫星通信的车联网数据压缩方法、装置、设备和介质.pdf",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\比亚迪EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\赛力斯\\赛力斯EMC相关.docx",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\赛力斯\\车载卫星通信方法、装置、设备及存储介质.pdf"
+      ],
+      "previews": {
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\一汽\\一汽EMC相关.docx": "专利一：《基于卫星通信的车联网数据压缩方法、装置、设备和介质》\n此专利的核心在于\n数据压缩算法和通信策略\n，以降低卫星通信流量成本。其重点并非硬件设计，因此\n直接和明确的EMC设计内容非常有限\n。\n1. 间接相关：系统架构中隐含的多射频模块共存\n位置\n：说明书第[0003]段 / 文件第4页\n相关原文\n：\n“该终端系统涵盖主机模块、无线通信模块、供电模块和天线模块。其中，无线通信模块包含4G/5G通信模组和低轨道卫星通信模组...”\n分析\n：该描述勾勒出一个包含\n蜂窝通信模组\n和\n卫星通信模组\n的硬件系统架构。多个射频模块在车辆狭小空间内共存并同时工作，是典型的EMC应用场景，其稳定运行的前提是进行了良好的EMC设计（如屏蔽、滤波、隔离），以避免相互干扰。虽然专利未明说，但这是方案可行的",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\吉利\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\专利对标\\主机厂专利与EMC资料\\比亚迪\\卫星通信方法、存储介质、控制器及车辆 (1).pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "一汽项目_专利与标准参考合集",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\专利一汽\\参考文献\\专利对标\\一汽项目专利与标准合集",
+      "task_type": "参考",
+      "summary": "该节点汇总一汽项目根目录中的标准、专利与车载卫星通信单篇资料，可作为专利一汽线的补充参考合集。",
+      "writing_value": "适合用于补齐背景技术、标准依据与典型专利边界说明。",
+      "source_entries": [
+        "参考文献",
+        "车载卫星通信系统"
+      ],
+      "file_count": 17,
+      "top_files": [
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\卫星通信方法、存储介质、控制器及车辆.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\卫星通讯终端及车辆.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\基于低轨卫星的车载通信方法、系统及车载控制设备.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\基于卫星的通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\基于卫星通信的车联网数据压缩方法、装置、设备和介质.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\车载卫星通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\车载卫星通信系统、方法、设备、存储介质、程序产品和车辆.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\车载卫星通信系统及车辆 (1).pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\车载卫星通信系统\\车载卫星通信系统及车辆.pdf",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\车载卫星通信系统收发能力下线检测方法、装置、设备及介质.pdf"
+      ],
+      "previews": {
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\卫星通信方法、存储介质、控制器及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\专利对标\\一汽项目专利与标准合集\\参考文献\\卫星通讯终端及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    }
+  ],
+  "论文卫星": [
+    {
+      "label": "MATLAB卫星仿真工程",
+      "src": "D:\\一汽项目\\LEO_Sim",
+      "dest": "D:\\论文卫星\\成果本身\\代码工程\\LEO_Sim",
+      "task_type": "成果",
+      "summary": "该目录是论文卫星线的核心仿真工程，包含 V7 工程版主程序、配置、结果和说明报告。",
+      "writing_value": "可以直接支撑论文的方法部分、实验设置部分和结果分析部分。",
+      "source_entries": [],
+      "file_count": 3835,
+      "top_files": [
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim_V5_Upgrade.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_2_SamplerOptimized.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_3_Route1_InfoGAN_NoPrior.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V7_0_Engineering.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V7_0_Engineering_Merged.m",
+        "成果本身\\代码工程\\LEO_Sim\\run_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\LEO_Sim\\run_V7_default.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim\\build_leo_emc_model.m",
+        "成果本身\\代码工程\\LEO_Sim\\v7proj\\classifyInterferenceTimeline.m",
+        "成果本身\\代码工程\\LEO_Sim\\v7proj\\classifyInterferenceTimeline_powerSampler.m",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim\\config_leo_emc.m",
+        "成果本身\\代码工程\\LEO_Sim\\v7proj\\defaultPowerAlignedSamplerCfg.m"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\LEO_Sim\\LEO_Sim_V5_Upgrade.m": "%% LEO StarNet EMC + GA(GAN) Worst-case + 3D Linked Dashboard (R2021a)  [V6.2 FULL]\n% 完全体增强点（在 V6.1 基础上“不改主仿真逻辑”，只补齐你 gen_set/train_lenet 的“图片生成链路”）：\n%  A) 生成 STFT 数据集图像（train/val/test, 4类：none/tone/pbnj/mod）\n%  B) 导出数据集样例拼图（montage）+ 测试集混淆矩阵\n%  C) 导出仿真时间轴关键时刻 STFT 图（用于PPT展示：干扰出现/保护/共信道等时刻）\n%  D) Dashboard 仍实时显示分类结果条形图 + 3D联动竖线 + 链路高亮\n%\n% 依赖：\n%  - Satellite Communications Toolbox\n%  - Deep Learning Toolbox\n%  - Optimization Toolbox (ga)\n%  - Image Processing Toolbox（你已安装：im2single/im2gray/imresize/montage等可用）\n%\n% 输出目录（默认）：\n%  - dataset_stft_r2021a/ (train/val/test 四类图片)\n%  - dataset_stft_r2021a/_exports/ (样例拼图、混淆矩阵、仿真关键帧STFT图)\n \nclear; clc; close all;\nrng(7);\n \nfprintf('============================================================\\n');\nfprintf('  LEO StarNet EMC | Worst-case Search (GA on GAN) | R2021a V6.2 FULL\\n');\nfprintf('============================================================\\n');\n \n%% =========================\n% PART 0: 参数区（可改）\n% =========================\nEpoch = datetime(2026,1,23,0,0,0,'TimeZone','UTC');   % 固定Epoch：不要用 now\n \nRe  = 6371e3;\nmu  = 3.986004418e14;\nc   = 299792458;\n \n% --- 星座 ---\nh      = 1200e3;\na      = Re + h;\necc    = 0.0;\nincDeg = 53;\n \nnumPlanes    = 12;\nsatsPerPlane = 8;\nF_phasing    = 1;\nNsat = numPlanes*satsPerPlane;\n \n% --- 仿真时长：一圈轨道 ---\nT_orbit = 2*pi*sqrt(a^3/mu);\nsample_time = 10;     % 秒\nsim_start = Epoch;\nsim_stop  = sim_start + seconds(T",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_2_SamplerOptimized.m": "%% LEO StarNet EMC + GA(GAN) Worst-case + 3D Linked Dashboard (R2021a)  [V6.2 FULL]\n% 完全体增强点（在 V6.1 基础上“不改主仿真逻辑”，只补齐你 gen_set/train_lenet 的“图片生成链路”）：\n%  A) 生成 STFT 数据集图像（train/val/test, 4类：none/tone/pbnj/mod）\n%  B) 导出数据集样例拼图（montage）+ 测试集混淆矩阵\n%  C) 导出仿真时间轴关键时刻 STFT 图（用于PPT展示：干扰出现/保护/共信道等时刻）\n%  D) Dashboard 仍实时显示分类结果条形图 + 3D联动竖线 + 链路高亮\n%\n% 依赖：\n%  - Satellite Communications Toolbox\n%  - Deep Learning Toolbox\n%  - Optimization Toolbox (ga)\n%  - Image Processing Toolbox（你已安装：im2single/im2gray/imresize/montage等可用）\n%\n% 输出目录（默认）：\n%  - dataset_stft_r2021a/ (train/val/test 四类图片)\n%  - dataset_stft_r2021a/_exports/ (样例拼图、混淆矩阵、仿真关键帧STFT图)\n \nclear; clc; close all;\nrng(7);\n \nfprintf('============================================================\\n');\nfprintf('  LEO StarNet EMC | Worst-case Search (GA on GAN) | R2021a V6.2 FULL\\n');\nfprintf('============================================================\\n');\n \n%% =========================\n% PART 0: 参数区（可改）\n% =========================\nEpoch = datetime(2026,1,23,0,0,0,'TimeZone','UTC');   % 固定Epoch：不要用 now\n \nRe  = 6371e3;\nmu  = 3.986004418e14;\nc   = 299792458;\n \n% --- 星座 ---\nh      = 1200e3;\na      = Re + h;\necc    = 0.0;\nincDeg = 53;\n \nnumPlanes    = 12;\nsatsPerPlane = 8;\nF_phasing    = 1;\nNsat = numPlanes*satsPerPlane;\n \n% --- 仿真时长：一圈轨道 ---\nT_orbit = 2*pi*sqrt(a^3/mu);\nsample_time = 10;     % 秒\nsim_start = Epoch;\nsim_stop  = sim_start + seconds(T",
+        "成果本身\\代码工程\\LEO_Sim\\LEO_StarNet_EMC_V6_3_Route1_InfoGAN_NoPrior.m": "%% LEO StarNet EMC + GA(GAN) Worst-case + 3D Linked Dashboard (R2021a)  [V6.2 FULL]\n% 完全体增强点（在 V6.1 基础上“不改主仿真逻辑”，只补齐你 gen_set/train_lenet 的“图片生成链路”）：\n%  A) 生成 STFT 数据集图像（train/val/test, 4类：none/tone/pbnj/mod）\n%  B) 导出数据集样例拼图（montage）+ 测试集混淆矩阵\n%  C) 导出仿真时间轴关键时刻 STFT 图（用于PPT展示：干扰出现/保护/共信道等时刻）\n%  D) Dashboard 仍实时显示分类结果条形图 + 3D联动竖线 + 链路高亮\n%\n% 依赖：\n%  - Satellite Communications Toolbox\n%  - Deep Learning Toolbox\n%  - Optimization Toolbox (ga)\n%  - Image Processing Toolbox（你已安装：im2single/im2gray/imresize/montage等可用）\n%\n% 输出目录（默认）：\n%  - dataset_stft_r2021a/ (train/val/test 四类图片)\n%  - dataset_stft_r2021a/_exports/ (样例拼图、混淆矩阵、仿真关键帧STFT图)\n \nclear; clc; close all;\nrng(7);\n \nfprintf('============================================================\\n');\nfprintf('  LEO StarNet EMC | Worst-case Search (GA on GAN) | R2021a V6.2 FULL\\n');\nfprintf('============================================================\\n');\n \n%% =========================\n% PART 0: 参数区（可改）\n% =========================\nEpoch = datetime(2026,1,23,0,0,0,'TimeZone','UTC');   % 固定Epoch：不要用 now\n \nRe  = 6371e3;\nmu  = 3.986004418e14;\nc   = 299792458;\n \n% --- 星座 ---\nh      = 1200e3;\na      = Re + h;\necc    = 0.0;\nincDeg = 53;\n \nnumPlanes    = 12;\nsatsPerPlane = 8;\nF_phasing    = 1;\nNsat = numPlanes*satsPerPlane;\n \n% --- 仿真时长：一圈轨道 ---\nT_orbit = 2*pi*sqrt(a^3/mu);\nsample_time = 10;     % 秒\nsim_start = Epoch;\nsim_stop  = sim_start + seconds(T"
+      }
+    },
+    {
+      "label": "基础卫星链路脚本",
+      "src": "D:\\一汽项目\\satellite.m",
+      "dest": "D:\\论文卫星\\成果本身\\代码工程\\satellite.m",
+      "task_type": "成果",
+      "summary": "该脚本提供基础卫星链路仿真模型，是论文卫星线的底层通信模型支撑。",
+      "writing_value": "适合写成系统模型或基础仿真验证的补充说明。",
+      "source_entries": [],
+      "file_count": 1,
+      "top_files": [
+        "成果本身\\代码工程\\satellite.m"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\satellite.m": "function model = emcBuildLinkModel(name, numSteps, dt, ...\n    visU_all, visG_all, azU, elU, rU, rrU, elG, rG, ...\n    pS_mW, totCCI, satChan, pIself_mW, pJsum_base_mW, ...\n    TxP_J_base_dBm, AJ_DelaySec, AJ_NullDepth_dB, fc_Hz, BW, p_n, Gisl, outageThrMbps, strengthOffset_dB)\n%EMCBUILDLINKMODEL Pack link model inputs.\n\n    model = struct();\n    model.Name = name;\n    model.numSteps = numSteps;\n    model.dt = dt;\n    model.visU_all = visU_all;\n    model.visG_all = visG_all;\n    model.azU = azU;\n    model.elU = elU;\n    model.rU = rU;\n    model.rrU = rrU;\n    model.elG = elG;\n    model.rG = rG;\n    model.pS_mW = pS_mW;\n    model.totCCI = totCCI;\n    model.satChan = satChan;\n    model.pIself_mW = pIself_mW;\n    model.pJsum_base_mW = pJsum_base_mW;\n    model.TxP_J_base_dBm = TxP_J_base_dBm;\n    model.AJ_DelaySec = AJ_DelaySec;\n    model.AJ_NullDepth_dB = AJ_NullDepth_dB;\n    model.fc_Hz = fc_Hz;\n    model.c = 299792458;\n    model.BW = BW;\n    model.p_n = p_n;\n    model.Gisl = Gisl;\n    model.OutageThr_Mbps = outageThrMbps;\n    model.SignalStrengthOffset_dB = strengthOffset_dB;\n    model.BLK = 1024;\nend\n"
+      }
+    },
+    {
+      "label": "试验室卫星EMC仿真报告",
+      "src": "D:\\一汽项目\\试验室环境下低轨卫星通信系统EMC仿真技术",
+      "dest": "D:\\论文卫星\\成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术",
+      "task_type": "成果",
+      "summary": "该目录补充了论文卫星线的报告材料、标准与专题论文。",
+      "writing_value": "有助于把工程仿真语言转成论文语体，并为实验设计与结果解读提供上下文。",
+      "source_entries": [],
+      "file_count": 5,
+      "top_files": [
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\最终稿_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\论文\\Anti-Jamming_Resilient_LEO_Satellite_Swarms.pdf",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\论文\\LEO_Satellite_Communication_Simulation_Framework_for_Connected_Vehicles.pdf"
+      ],
+      "previews": {
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\最终稿_试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n1 国内外研究现状\n1.1概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术(1).docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n国内外研究现状\n1.1 概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备",
+        "成果本身\\报告材料\\试验室环境下低轨卫星通信系统EMC仿真技术\\试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究\n1. 论文选题依据\n1.1 论文选题的意义\n低轨卫星通信系统作为空天地海一体化信息网络的重要组成部分，正迎来前所未有的发展机遇。以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道[1]。然而，这种爆炸式增长也带来了严峻的电磁兼容性挑战。\n有限的轨道资源和频谱资源导致不同系统之间存在着严重的同频干扰风险[2]。低轨卫星星座具有卫星数量多、轨道构型复杂、星地相对位置动态变化等特点，使得传统的基于确定性场景的干扰分析方法难以高效、准确地评估其系统级EMC性能[3]。\n在此背景下，试验室环境下的EMC仿真技术成为在系统实际部署前进行充分验证与优化的关键手段。本研究旨在融合确定性仿真与概率性统计方法，构建一套高效、高精度的低轨卫星通信系统EMC仿真与测试评估体系。\n1.2 国内外研究现状\n1.2.1 国际研究进展\n在国际研究层面，低轨卫星通信系统的EMC研究已经从单一的链路分析发展为系统级的仿真与评估。ITU-R等国际标准化组织制定了一系列技术标准和建议书，为基于空间概率统计的干扰分析方法提供了理论基础[4]。\n在仿真平台建设方面，Visualyse、OPNET等专业仿真工具被广泛应用于卫星通信系统的EMC分析[5]。这些平台提供了完整的物理层到网络层仿真能力，支持大规模星座的建模与仿真。特别值得一提的是，丰田公司开发的集成SUMO、OS³和OMNEST的仿真框架，能够有效评估车联网场景下LEO卫星通信的端到端性能[6]。\n1.2.2 国内研究现状\n国内研究机构在低轨卫星通信系统EMC领域取得了显著进展。在频谱共用研究方面，中国联通研究院系统分析了5G与低轨卫星系统的频谱共享特性，提出了基于空间隔离和功率控制的干扰规避方案[7]。华北电力大学基于Visualyse平台，对26GHz频段5G基站与卫星间业务的兼容性进行了仿真验证[8]。\n在仿真方法创新方面，吕俊璋等人对空间概率统计方法进行了重要改进，提出了考虑网格尺寸精度复杂度的评估方法，创新性地发展了联合低轨卫星概率密度分布的自适应隔离角技术[9]。\n在硬件平台建设方面，国内主机厂发挥了重要作用。吉利科技集团开发的高度集成化车载卫星通信系统[10]，集成了人机交互设备、基带处理模块与多频段卫星天线。重庆长安科技有限公司研发的可插拔式卫星通讯终端[11]采用圆极化全向天线设计，通过快速插拔接口实现车载与离场景的灵活使用。\n2.\n技术\n研究方案\n2.1 研究目标及研究内容"
+      }
+    },
+    {
+      "label": "卫星EMC原型工程与Simulink模型",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\论文卫星\\成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink",
+      "task_type": "成果",
+      "summary": "该节点保留一汽项目中的 Simulink 原型工程、根目录系统模型和构建缓存，是论文卫星线分析平台演进过程的重要工程补充。",
+      "writing_value": "适合在论文中说明平台从原型到工程化版本的演进路线与验证链。",
+      "source_entries": [
+        "LEO_EMC_Sim",
+        "build_LEO_EMC_Sim.m",
+        "LEO_EMC_System.slx",
+        "LEO_EMC_System.slx.autosave",
+        "LEO_EMC_System.slxc",
+        "slprj"
+      ],
+      "file_count": 142,
+      "top_files": [
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\build_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\build_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\cfo_comp.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\interf_gen.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\LEO_Sim_V1.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\preamble_insert.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\run_LEO_EMC_Sim.m",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\LEO_EMC_Sim_说明报告.docx",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\LEO_EMC_仿真技术_主流方法与文献支撑_说明报告.docx",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\.vscode\\settings.json",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\.vscode\\tasks.json",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_System.slx"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\build_LEO_EMC_Sim.m": "function build_LEO_EMC_Sim()\n% LEO EMC 通信视角 Simulink 自动建模脚本（Comm Toolbox + Stateflow 写 Script）\n% R2021a兼容：MATLAB Function block 在Simulink层面可能表现为SubSystem；需通过 Stateflow.EMChart.Script 写入代码\n\nassert(license('test','communication_toolbox')==1, \"Communications Toolbox 未授权\");\nassert(license('test','stateflow')==1, \"Stateflow 未授权（MATLAB Function block 需要）\");\n\nmodel = 'LEO_EMC_Sim_Simulink';\nif bdIsLoaded(model); close_system(model,0); end\nif exist([model '.slx'],'file'); delete([model '.slx']); end\n\nnew_system(model);\nopen_system(model);\n\ncfg = defaultCfg();\nassignin('base','cfg',cfg);\n\nset_param(model,'Solver','FixedStepDiscrete');\nset_param(model,'FixedStep', num2str(cfg.sim.Ts));\nset_param(model,'StopTime',  cfg.sim.StopTime);\n\n% 顶层子系统\nadd_block('built-in/Subsystem',[model '/TX'],          'Position',[80 80 260 260]);\nadd_block('built-in/Subsystem',[model '/Channel_EMC'], 'Position',[320 80 540 260]);\nadd_block('built-in/Subsystem',[model '/RX'],          'Position',[600 80 820 260]);\nadd_block('built-in/Subsystem',[model '/Metrics'],     'Position',[880 80 1120 260]);\n\nbuildTX([model '/TX']);\nbuildChannelEMC([model '/Channel_EMC']);\nbuildRX([model '/RX']);\nbuildMetrics([model '/Metrics']);\n\nset_param(model,'SimulationCommand','update');\n\n% 顶层连线\nadd_line(model,'TX/1','Channel_EMC/1','autorouting','on');\nadd_line(model,'Channel_EMC/1','RX/1','autorouting','on');\nadd_line(model,'RX/1",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\build_LEO_EMC_Sim.m": "function build_LEO_EMC_Sim()\n% build_LEO_EMC_Sim\n% 一键生成 Simulink 模型：LEO卫星通信 EMC（通信视角）仿真骨架\n%\n% 依赖（推荐）：\n%  - Simulink\n%  - Communications Toolbox（用于QPSK调制/解调、卷积码/Viterbi、误码统计等模块）\n%\n% 生成：\n%  - LEO_EMC_Sim_Simulink.slx\n\nmodel = 'LEO_EMC_Sim_Simulink';\nif bdIsLoaded(model); close_system(model,0); end\nif exist([model '.slx'],'file'); delete([model '.slx']); end\n\nnew_system(model);\nopen_system(model);\n\n% ---------- 全局参数（写入 Base Workspace，方便外行只改这里） ----------\ncfg = defaultCfg();\nassignin('base','cfg',cfg);\n\n% ---------- 画布基础设置 ----------\nset_param(model,'StopTime','cfg.sim.StopTime');\nset_param(model,'Solver','FixedStepDiscrete');\nset_param(model,'FixedStep','cfg.sim.Ts');\n\n% ---------- 添加子系统：TX / Channel+EMC / RX / Metrics ----------\nadd_block('built-in/Subsystem',[model '/TX'], 'Position',[80 80 240 240]);\nadd_block('built-in/Subsystem',[model '/Channel_EMC'], 'Position',[320 80 520 240]);\nadd_block('built-in/Subsystem',[model '/RX'], 'Position',[600 80 760 240]);\nadd_block('built-in/Subsystem',[model '/Metrics'], 'Position',[840 80 1020 240]);\n\n% 顶层连接：TX -> Channel_EMC -> RX -> Metrics\n\n% ---------- 构建 TX ----------\nbuildTX([model '/TX']);\n\n% ---------- 构建 Channel + EMC ----------\nbuildChannelEMC([model '/Channel_EMC']);\n\n% ---------- 构建 RX ----------\nbuildRX([model '/RX']);\n\n% ---------- 构建 Metrics ----------\nbuildMetrics([model '/Metrics']);\nadd_line(model,'TX/1','Channel_EMC/1','",
+        "成果本身\\代码工程\\LEO_EMC_Sim_原型与Simulink\\LEO_EMC_Sim\\cfo_comp.m": "function y = cfo_comp(r)\ncfg = evalin('base','cfg');\n\nrx = r(:);\nN = length(rx);\nRs = cfg.phy.Rs;\nt = (0:N-1).';\n\nif cfg.rx.cfoMethod == 1\n    cfo_hat = cfg.leo.fD_Hz;\nelse\n    L = cfg.phy.preambleHalfLen;\n    if N < 2*L\n        cfo_hat = 0;\n    else\n        r1 = rx(1:L);\n        r2 = rx(L+1:2*L);\n        P = sum(conj(r1).*r2);\n        cfo_hat = angle(P) * Rs / (2*pi*L);\n    end\nend\n\ny = rx .* exp(-1j*2*pi*cfo_hat*t/Rs);\nend\n"
+      }
+    },
+    {
+      "label": "卫星干扰识别数据与训练模型",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\论文卫星\\成果本身\\代码工程\\干扰识别数据与训练模型",
+      "task_type": "成果",
+      "summary": "该节点汇总 STFT 数据集、GAN 干扰模型和 LeNet 训练模型，是论文卫星线干扰识别支链的直接数据底座。",
+      "writing_value": "可支撑论文中的数据集构建、训练流程、识别实验与模型复现实验说明。",
+      "source_entries": [
+        "dataset_stft_r2021a",
+        "GAN_Jammer_R2021a.mat",
+        "lenet_stft_model_r2021a.mat"
+      ],
+      "file_count": 3617,
+      "top_files": [
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\confusion_test.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\montage_train.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_01_k0001_none_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_02_k0007_mod_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_03_k0223_none_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_04_k0258_mod_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_05_k0260_none_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_06_k0396_mod_mod.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_07_k0397_none_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_08_k0563_pbnj_pbnj.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_09_k0564_none_none.png",
+        "成果本身\\代码工程\\干扰识别数据与训练模型\\dataset_stft_r2021a\\_exports\\sim_keyframe_10_k0575_mod_none.png"
+      ],
+      "previews": {}
+    },
+    {
+      "label": "卫星论文与模板文献",
+      "src": "D:\\一汽项目\\EMC正向设计写作模板参考",
+      "dest": "D:\\论文卫星\\参考文献\\论文文献\\EMC正向设计写作模板参考",
+      "task_type": "参考",
+      "summary": "该目录收集了卫星、空间站和 EMC 正向设计相关论文模板，是论文卫星线的重要综述与写作参考来源。",
+      "writing_value": "适合用于引言、相关工作和写作结构借鉴。",
+      "source_entries": [],
+      "file_count": 6,
+      "top_files": [
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\机载机电管理计算机电磁兼容正向设计方法.pdf",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\某大型卫星电磁兼容性设计与验证_崔相臣.pdf",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\汽车雷达误报警整改分析及整车EMC正向设计_张高杰.pdf",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\空间站用舱内风机电磁兼容性设计.pdf",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\车辆零部件电磁兼容设计与应用.pdf",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\飞行控制计算机电磁兼容正向设计方法.pdf"
+      ],
+      "previews": {
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\机载机电管理计算机电磁兼容正向设计方法.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\某大型卫星电磁兼容性设计与验证_崔相臣.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\论文文献\\EMC正向设计写作模板参考\\汽车雷达误报警整改分析及整车EMC正向设计_张高杰.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "正向设计研究方案论文与标准",
+      "src": "D:\\一汽项目\\车载低轨卫星通信系统EMC性能正向设计技术研究方案",
+      "dest": "D:\\论文卫星\\参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案",
+      "task_type": "参考",
+      "summary": "该目录包含研究方案正文、标准、对照文件和专题论文，是论文卫星线的项目背景与规范依据。",
+      "writing_value": "可直接支撑研究背景、工程需求、评价指标与标准约束部分。",
+      "source_entries": [],
+      "file_count": 15,
+      "top_files": [
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\1.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\2.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\3.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\Q_FC_XXX-2025_车载低轨卫星通信系统EMC性能正向设计规范.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\无人机通信抗干扰性能的测试评估技术研究-开题报告-周正阳.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\最终稿_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\最终补充_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\正向设计规范0312.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\车载低轨卫星通信系统EMC正向设计规范_专利与标准对照文件.docx",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\论文\\基于近场扫描的移动通信卫星EMC性能评估.pdf",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\标准\\车载卫星通信设备电磁兼容性要求和测量方法.pdf"
+      ],
+      "previews": {
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\1.docx": "好的，这是一个非常深刻的问题。从车载低轨卫星通信系统**自身的特点**出发，来阐述为何必须从这四个层面进行系统性研究，正是EMC正向设计思想的精髓所在。\n车载低轨卫星通信系统并非一个独立的设备，而是一个**嵌入在极端复杂电磁环境中的、同时包含高功率发射和高灵敏度接收的异构系统**。其自身特点决定了EMC问题的复杂性和系统性，具体分析如下：\n---\n### **1. 系统架构层面：解决“自我打架”与“资源争抢”问题**\n*   **系统特点**：系统内部集成了**多个共存的射频前端**，如卫星通信发射机/接收机、GNSS接收机、蜂窝通信模块（4G/5G）等。它们在一个狭小空间内同时工作。\n*   **引发的EMC问题**：\n*   **自干扰**：正如**一汽专利**中指出的，卫星通信发射（大功率）会淹没邻近频段的GNSS接收（极微弱信号），导致定位漂移。这是典型的“自我打架”。\n*   **资源冲突**：多个设备同时收发，会造成时空频域的冲突。\n*   **为何必须研究系统架构**：\n*   事后在电路板级别加滤波器无法根本解决这种系统级、芯片级别的干扰。\n*   **正向设计研究**就是要像**一汽和吉利**那样，在顶层设计**时域隔离、资源调度策略**，从逻辑和时序上避免干扰发生。这好比交通管理系统，不是给每辆车加固，而是设计红绿灯和调度规则，从源头上避免撞车。\n---\n### **2. 天线与射频前端层面：控制电磁能量的“门户”**\n*   **系统特点**：该系统是车辆与外界电磁环境交互的**主要门户**。天线既是能量的“出口”（发射），也是“入口”（接收）。\n*   **引发的EMC问题**：\n*   **干扰他人**：发射机产生的杂散和谐波通过天线辐射出去，会干扰车内其他系统（如收音机、ADAS传感器）。\n*   **被他人干扰**：接收天线会拾取来自车辆电机、控制器等内部噪声以及外部基站、高压线等外部干扰，导致通信质量下降。\n*   **为何必须研究天线与射频**：",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\2.docx": "基于您提供的标准文档《YD/T XXXX.4—XXXX 车载卫星通信设备电磁兼容性要求和测量方法》，我将逐条分析您总结的四个层面中\"引发的EMC问题\"里的每一个要点，并对应到标准中的具体章节、页码和原文内容。\n### **1. 系统架构层面**\n**引发的EMC问题1：自干扰（卫星通信发射干扰GNSS接收）**\n*   **标准对应**：**性能判据A (6.2)**\n*   **所在页码**：P12\n*   **原文内容**：\n> \"试验中和试验后，通信连接应保持，无用户控制功能的丧失或存储数据的丢失，DUT应正常工作，能执行其预先设计的所有功能。对于数据传输业务模式，试验中，数据吞吐量（应用层吞吐量）应不少于参考测试信道最大吞吐量的95%...\"\n*   **分析**：系统内自干扰（如卫星发射干扰GNSS）的直接后果就是通信连接中断或性能降级。标准中的**性能判据A**是所有抗扰度测试的最高要求，它强制要求系统在干扰下（包括系统内自干扰）必须保持连接和95%以上的吞吐量。一汽专利中提出的\"时域隔离\"等系统级策略，其根本目的就是为了在复杂的干扰环境中依然能满足此判据。\n**引发的EMC问题2：资源冲突（多设备同时收发造成的时空频域冲突）**\n*   **标准对应**：**发信机免测频段 (5.5.3)**\n*   **所在页码**：P12\n*   **原文内容**：\n> \"发信机免测频段为发信机工作的中心频率加减2倍DUT的占用带宽。\"\n*   **分析**：标准通过定义\"免测频段\"来规避对自身有用信号的无意义测试，这本身就隐含了对系统工作频段和资源的管理要求。**资源冲突**的本质是频谱和时序的规划不当。吉利专利中的\"资源共享与时序控制\"等策略，正是在系统设计阶段对频谱和时序资源进行规划，以避免冲突，这与标准对频段管理的逻辑一脉相承。虽然标准不直接规定如何调度，但其性能判据（如判据A）是检验资源调度策略是否有效的最终标准。\n### **2. 天线与射频前端层面**\n**引发的EMC问题1：干扰他人（发射机杂散和谐波辐射）**\n*   **标准对应**：**辐射杂散骚扰 (8.1.2.1)**\n*   **所在页码**：P14",
+        "参考文献\\研究方案与标准\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\3.docx": "### **车载低轨卫星通信系统EMC正向设计技术研究方案**\n#### **1. 系统架构层面：解决\"自我打架\"与\"资源争抢\"问题**\n*   **系统特点**：系统内部集成了**多个共存的射频前端**，如卫星通信发射机/接收机、GNSS接收机、蜂窝通信模块（4G/5G）等。它们在一个狭小空间内同时工作。\n*   **引发的EMC问题**：\n*   **自干扰**：正如**一汽专利**中指出的，卫星通信发射（大功率）会淹没邻近频段的GNSS接收（极微弱信号），导致定位漂移。这是典型的\"自我打架\"。\n*   **标准对应**：**性能判据A (第12页)**\n*   **原文内容**：\"试验中和试验后，通信连接应保持，无用户控制功能的丧失或存储数据的丢失，DUT应正常工作...\"\n*   **资源冲突**：多个设备同时收发，会造成时空频域的冲突。\n*   **标准对应**：**发信机免测频段 (第12页, 5.5.3)**\n*   **原文内容**：\"发信机免测频段为发信机工作的中心频率加减2倍DUT的占用带宽。\"\n*   **为何必须研究系统架构**：\n*   事后在电路板级别加滤波器无法根本解决这种系统级、芯片级别的干扰。\n*   **正向设计研究**就是要像**一汽和吉利**那样，在顶层设计**时域隔离、资源调度策略**，从逻辑和时序上避免干扰发生。这好比交通管理系统，不是给每辆车加固，而是设计红绿灯和调度规则，从源头上避免撞车。\n---\n#### **2. 天线与射频前端层面：控制电磁能量的\"门户\"**\n*   **系统特点**：该系统是车辆与外界电磁环境交互的**主要门户**。天线既是能量的\"出口\"（发射），也是\"入口\"（接收）。\n*   **引发的EMC问题**：\n*   **干扰他人**：发射机产生的杂散和谐波通过天线辐射出去，会干扰车内其他系统（如收音机、ADAS传感器）。"
+      }
+    },
+    {
+      "label": "一汽项目_技术报告与简版方案",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\论文卫星\\参考文献\\技术报告\\一汽项目技术报告与简版方案",
+      "task_type": "参考",
+      "summary": "该节点收纳一汽项目根目录中的项目总结、学位论文和试验室仿真简版材料，可作为论文卫星线的补充技术报告库。",
+      "writing_value": "适合提炼项目背景、研究现状、工程意义和简版汇报中的成熟表述。",
+      "source_entries": [
+        "00 技术开发项目总结报告.docx",
+        "技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+        "16111047-宋亚丽-博士学位论文终稿.doc",
+        "试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+        "试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+        "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "lab_emc_sim_one_page.docx",
+        "lab_emc_sim_two_page.docx",
+        "最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx"
+      ],
+      "file_count": 12,
+      "top_files": [
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\00 技术开发项目总结报告.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\lab_emc_sim_one_page.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\lab_emc_sim_two_page.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\16111047-宋亚丽-博士学位论文终稿.doc"
+      ],
+      "previews": {
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\00 技术开发项目总结报告.docx": "中国第一汽车股份有限公司\n技术开发项目总结报告\n■\n产品技术\n□\n基础技术\n项目名称：\n电动智能网联汽车电磁兼容仿真验证技术研究\n起止时间：\n2022.01-2023.12\n承担单位：\n北京交通大学\n负\n责\n人：\n张凯\n审\n核：",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\lab_emc_sim_one_page.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究方案（一页纸）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n背景与目标\n• 解决实验室测试难以复现真实在轨/典型应用场景多源耦合干扰的问题，降低“实验室-在轨”偏差。\n• 形成“实测-建模-仿真-智能生成-验证”闭环，实现通信性能与EMC（骚扰/抗扰度）联合评估与可移植用例生成。\n关键研究内容\n• 实验测量：微波暗室/GNSS暗箱采集链路指标与干扰响应，形成基准数据集。\n• 模型抽象：拟合接口函数/节点库，完成仿真参数对齐与外推。\n• EMC仿真：集成骚扰测量（辐射杂散/辐射/传导）与抗扰度（辐射、BCI、ESD等），嵌入标准限值与性能判据。\n• 智能用例：干扰特征库 + GA/GAN 生成最恶劣/罕见场景，驱动单星与多星组网压力测试。\n• 闭环验证：仿真-实测对标，输出用例库、评分与防护建议。\n研究内容示意图\n图1 研究内容示意图\n预期成果\n• “干扰-响应”实验基准数据集 + 接口函数/节点库。\n• 面向标准的EMC/通信联合仿真平台与可复用测试流程。\n• 典型与极限干扰用例库（含生成方法）及评估报告模板/防护建议。",
+        "参考文献\\技术报告\\一汽项目技术报告与简版方案\\lab_emc_sim_two_page.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究方案（两页纸）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n1 背景与研究意义\n低轨卫星通信系统快速发展，通信抗干扰性能与电磁兼容性（EMC）评估成为保障系统可靠性的关键环节。\n传统实验室测试难以复现“多干扰源耦合+动态组网”综合效应，导致测试结果与在轨性能存在偏差。\n亟需将行业标准要求（骚扰/抗扰度限值、性能判据）与通信性能指标统一到可复用的仿真-实测闭环流程中。\n2 研究目标\n构建覆盖“单星链路-多星动态组网”的实验室EMC/通信联合仿真与评估方法。\n建立贴近典型应用场景的干扰模型与干扰特征库，并实现极限压力用例的智能生成。\n形成可移植的测试用例生成方法、标准化评估报告与防护建议，支撑工程正向设计与标准完善。\n3 研究内容与关键技术\n实验测量与数据集：构建微波暗室/GNSS暗箱测试环境，获取链路指标与不同干扰条件下的“干扰-响应”数据集。\n模型抽象与接口校正：将实测数据拟合为接口函数/节点库，使仿真节点行为与实测对齐，并具备一定外推能力。\nEMC仿真模块集成：基于行业标准，集成骚扰测量仿真（辐射杂散、辐射骚扰、传导骚扰）与抗扰度试验仿真（辐射抗扰度、BCI、ESD等），嵌入限值与性能判据。\n智能用例生成与闭环验证：建立干扰特征库，结合遗传算法（GA）与生成对抗网络（GAN）生成最恶劣/罕见干扰场景；在仿真平台中动态注入干扰并与实测对标，输出用例库与防护建议。\n图1 关键技术说明图（两页纸附图）\n4 技术路线与实施计划\n阶段1（0-3个月）：搭建实验室环境与测试链路；完成典型干扰源配置与基准数据采集。"
+      }
+    },
+    {
+      "label": "一汽项目_参考文献与标准合集",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\论文卫星\\参考文献\\研究方案与标准\\一汽项目参考文献合集",
+      "task_type": "参考",
+      "summary": "该节点汇总一汽项目根目录中的专利、标准和卫星通信参考资料，可作为论文卫星线的补充背景文献库。",
+      "writing_value": "适合用于补充标准引用、专利背景和相关工作对照。",
+      "source_entries": [
+        "参考文献"
+      ],
+      "file_count": 16,
+      "top_files": [
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\卫星通信方法、存储介质、控制器及车辆.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\卫星通讯终端及车辆.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\基于低轨卫星的车载通信方法、系统及车载控制设备.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\基于卫星的通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\基于卫星通信的车联网数据压缩方法、装置、设备和介质.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\车载卫星通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\车载卫星通信系统、方法、设备、存储介质、程序产品和车辆.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\车载卫星通信系统及车辆 (1).pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\车载卫星通信系统收发能力下线检测方法、装置、设备及介质.pdf",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\车载卫星通信设备电磁兼容性要求和测量方法.pdf"
+      ],
+      "previews": {
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\卫星通信方法、存储介质、控制器及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\研究方案与标准\\一汽项目参考文献合集\\参考文献\\卫星通讯终端及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    }
+  ],
+  "论文无人机": [
+    {
+      "label": "Python无人机仿真工程_12",
+      "src": "D:\\UAV_Communication_GA\\12",
+      "dest": "D:\\论文无人机\\成果本身\\代码工程\\12",
+      "task_type": "成果",
+      "summary": "该目录是无人机论文线的主工程，包含 GA、GAN、KPI/BLER 评估和实测对照输出。",
+      "writing_value": "是论文方法与结果章节的直接来源。",
+      "source_entries": [],
+      "file_count": 206,
+      "top_files": [
+        "成果本身\\代码工程\\12\\bler_mc.py",
+        "成果本身\\代码工程\\12\\bler_sionna.py",
+        "成果本身\\代码工程\\12\\compare_measured_cornercases.py",
+        "成果本身\\代码工程\\12\\compare_random_ga_gan.py",
+        "成果本身\\代码工程\\12\\evaluate.py",
+        "成果本身\\代码工程\\12\\gan_uav_pipeline.py",
+        "成果本身\\代码工程\\12\\kpi.py",
+        "成果本身\\代码工程\\12\\plot_results.py",
+        "成果本身\\代码工程\\12\\quick_demo_pipeline.py",
+        "成果本身\\代码工程\\12\\UAV_GA.py",
+        "成果本身\\代码工程\\12\\uav_gan_cli.py",
+        "成果本身\\代码工程\\12\\__backup_before_upstream_20260302_143119\\compare_random_ga_gan.py"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\12\\bler_mc.py": "from __future__ import annotations\n\nimport argparse\nimport csv\nfrom dataclasses import dataclass\nfrom typing import Iterable, List, Tuple\n\nimport numpy as np\n\n\ndef _qpsk_map(bits: np.ndarray) -> np.ndarray:\n    # bits shape: (N, 2) -> symbols shape: (N,)\n    b0 = bits[:, 0].astype(np.float32)\n    b1 = bits[:, 1].astype(np.float32)\n    # Gray mapping: 00->(1+1j), 01->(1-1j), 11->(-1-1j), 10->(-1+1j)\n    i = 1.0 - 2.0 * b0\n    q = 1.0 - 2.0 * b1\n    s = (i + 1j * q) / np.sqrt(2.0)\n    return s.astype(np.complex64)\n\n\ndef _qpsk_demod_hard(symbols: np.ndarray) -> np.ndarray:\n    i = (np.real(symbols) < 0.0).astype(np.int8)\n    q = (np.imag(symbols) < 0.0).astype(np.int8)\n    return np.stack([i, q], axis=1)\n\n\ndef _qam16_map(bits: np.ndarray) -> np.ndarray:\n    # bits shape: (N, 4) Gray mapping with levels {-3,-1,1,3}, normalized\n    b0, b1, b2, b3 = [bits[:, k].astype(np.int8) for k in range(4)]\n\n    def gray_2bit_to_level(msb: np.ndarray, lsb: np.ndarray) -> np.ndarray:\n        # 00->-3, 01->-1, 11->+1, 10->+3\n        lvl = np.empty_like(msb, dtype=np.float32)\n        m0 = (msb == 0) & (lsb == 0)\n        m1 = (msb == 0) & (lsb == 1)\n        m2 = (msb == 1) & (lsb == 1)\n        m3 = (msb == 1) & (lsb == 0)\n        lvl[m0] = -3.0\n        lvl[m1] = -1.0\n        lvl[m2] = 1.0\n        lvl[m3] = 3.0\n        return lvl\n\n    i = gray_2bit_to_level(b0, b1)\n    q = gray_2bit_to_level(b2, b3)\n",
+        "成果本身\\代码工程\\12\\bler_sionna.py": "from __future__ import annotations\n\nimport argparse\nimport csv\nimport os\nfrom dataclasses import dataclass\nfrom typing import Iterable, Tuple\n\nimport numpy as np\n\n\n@dataclass(frozen=True)\nclass SionnaConfig:\n    modulation: str = \"qpsk\"  # qpsk|16qam\n    n_bits_per_block: int = 1024\n    n_blocks: int = 400\n    seed: int = 0\n    channel: str = \"awgn\"  # awgn|rician\n    rician_k: float = 5.0\n\n\ndef _require_sionna():\n    try:\n        import tensorflow as tf  # noqa: F401\n        import sionna  # noqa: F401\n    except Exception as e:  # pragma: no cover\n        raise ImportError(\n            \"Sionna/TensorFlow not available. Install tensorflow + sionna first, \"\n            \"or provide an existing BLER_B.csv LUT.\"\n        ) from e\n\n\ndef simulate_bler_curve_sionna(\n    sinr_db_grid: Iterable[float],\n    cfg: SionnaConfig = SionnaConfig(),\n) -> Tuple[np.ndarray, np.ndarray]:\n    _require_sionna()\n\n    import tensorflow as tf\n    # Sionna v1.x namespace\n    from sionna.phy.mapping import BinarySource, Constellation, Mapper, Demapper\n    from sionna.phy.channel import AWGN\n\n    mod = str(cfg.modulation).strip().lower()\n    if mod not in (\"qpsk\", \"16qam\"):\n        raise ValueError(\"modulation must be 'qpsk' or '16qam'\")\n\n    bits_per_sym = 2 if mod == \"qpsk\" else 4\n    n_bits = int(max(cfg.n_bits_per_block, bits_per_sym))\n    n_bits = int((n_bits // bits_per_sym) * bits_per_sym)\n    n_sy",
+        "成果本身\\代码工程\\12\\compare_measured_cornercases.py": "from __future__ import annotations\n\nimport argparse\nimport csv\nimport io\nimport json\nimport math\nimport os\nimport zipfile\nfrom dataclasses import asdict, dataclass, replace\nfrom pathlib import Path\nfrom types import MethodType\nfrom typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple\n\nimport matplotlib\nimport numpy as np\n\nmatplotlib.use(\"Agg\")\nimport matplotlib.pyplot as plt  # noqa: E402\n\nfrom UAV_GA import DroneCommProblem, InterferenceSource\nimport gan_uav_pipeline as gan_pipeline\nfrom kpi import outage_probability, summarize_distribution, tail_mean\n\n\nDEFAULT_AERPAW_ZIP = r\"d:\\Downloads\\aerpaw-dataset-24.zip\"\nDEFAULT_DRYAD_ZIP = r\"d:\\Downloads\\doi_10_5061_dryad_wh70rxx06__v20250521.zip\"\nDEFAULT_REF_PDF = r\"d:\\UAV_Communication_GA\\key reference\\Aerial_RF_and_Throughput_Measurements_on_a_Non-Standalone_5G_Wireless_Network.pdf\"\n\nAERPAW_NR_FILES = (\n    \"aerpaw-dataset-24/Logs/pawprints_5G_NR_altitude30m_flight1.csv\",\n    \"aerpaw-dataset-24/Logs/pawprints_5G_NR_altitude30m_flight2.csv\",\n)\nAERPAW_THR_FILES = (\"aerpaw-dataset-24/Logs/pawprints_iperf_throughput_altitude30m_flight1.csv\",)\nDRYAD_SINR_FILES = (\n    \"Dryad/yaw45/inputf1_sinr_with_header.csv\",\n    \"Dryad/yaw315/inputf1_sinr_with_header.csv\",\n)\nDRYAD_THR_FILES = (\n    \"Dryad/yaw45/input_throughput_with_header.csv\",\n    \"Dryad/yaw315/input_throughput_with_header.csv\",\n)\n\n\ndef _base_user_params() -> Dict["
+      }
+    },
+    {
+      "label": "Python无人机模块化代码",
+      "src": "D:\\UAV_Communication_GA\\UAV_Communication_GA",
+      "dest": "D:\\论文无人机\\成果本身\\代码工程\\UAV_Communication_GA",
+      "task_type": "成果",
+      "summary": "该目录保留无人机通信工程的模块化实现，可作为论文中的模型封装和子模块说明依据。",
+      "writing_value": "适合支撑模块设计、实现结构和可复现实验描述。",
+      "source_entries": [],
+      "file_count": 37,
+      "top_files": [
+        "成果本身\\代码工程\\UAV_Communication_GA\\main.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\requirements.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\combined\\_init_.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\distance\\_init_.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\interference\\_init_.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\obstruction\\_init_.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\utils\\_init_.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\velocity\\_init_.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\combined\\combined.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\utils\\common_utils.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\distance\\distance.py",
+        "成果本身\\代码工程\\UAV_Communication_GA\\interference\\interference.py"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\UAV_Communication_GA\\main.py": "#!/usr/bin/env python3\n\"\"\"\n无人机通信劣化程度优化系统 - 主程序入口（三维可视化版本）\n总通信劣化程度 = W₁ × D₁(d) + W₂ × D₂(o) + W₃ × D₃(i) + W₄ × D₄(v)\n\"\"\"\n\nimport numpy as np\nimport sys\nimport os\nimport argparse\nfrom datetime import datetime\nimport traceback\n\n# Keep the legacy console prints from crashing on GBK terminals.\nif hasattr(sys.stdout, \"reconfigure\"):\n    sys.stdout.reconfigure(encoding=\"utf-8\", errors=\"replace\")\nif hasattr(sys.stderr, \"reconfigure\"):\n    sys.stderr.reconfigure(encoding=\"utf-8\", errors=\"replace\")\n\n# 添加项目路径\ncurrent_dir = os.path.dirname(os.path.abspath(__file__))\nsys.path.append(current_dir)\n\nprint(\"=== 系统启动调试信息 ===\")\nprint(f\"当前目录: {current_dir}\")\nprint(f\"Python版本: {sys.version}\")\nprint(f\"工作目录: {os.getcwd()}\")\n\n# 调试信息：检查模块是否存在\nprint(\"\\n=== 检查模块是否存在 ===\")\nmodules_to_check = [\n    ('distance', 'DistanceOptimizer'),\n    ('obstruction', 'ObstructionOptimizer3D'),\n    ('interference', 'InterferenceOptimizer'),\n    ('velocity', 'VelocityOptimizer'),\n    ('combined', 'CombinedOptimizer')\n]\n\nfor package_name, class_name in modules_to_check:\n    package_path = os.path.join(current_dir, package_name)\n    module_path = os.path.join(package_path, f\"{package_name}.py\")\n    if os.path.exists(package_path) and os.path.exists(module_path):\n        print(f\"✓ 找到 {package_name} 包和模块\")\n    else:\n        print(f\"✗ 未找到 {package_name} 包或模块\")\n\n# 导入各个模块 - 使用包结构导入\nprint(\"\\n=== 尝试导入模块 ===\")\ntry:\n    from distan",
+        "成果本身\\代码工程\\UAV_Communication_GA\\requirements.py": "\"\"\"\n依赖检查和管理工具\n自动检查并安装项目所需的依赖包\n\"\"\"\n\nimport sys\nimport subprocess\nimport importlib\nfrom typing import Dict, List, Tuple, Optional\n\n# 必需依赖包及其最低版本（使用导入名）\nREQUIRED_PACKAGES = {\n    'numpy': '1.19.0',\n    'scipy': '1.5.0',\n    'geatpy': '2.7.0',\n    'matplotlib': '3.3.0',\n    'pandas': '1.1.0',\n    'tqdm': '4.62.0',\n    'yaml': '5.4.0',  # 导入名是 yaml，安装名是 pyyaml\n    'colorlog': '6.0.0'\n}\n\n# 包名映射（导入名 -> 安装名）\nPACKAGE_INSTALL_MAP = {\n    'yaml': 'pyyaml'\n}\n\n# 特殊包版本处理\nSPECIAL_PACKAGE_VERSIONS = {\n    'colorlog': '6.10.1'  # 手动指定已知版本\n}\n\n\ndef check_python_version() -> Tuple[bool, str]:\n    \"\"\"检查Python版本\"\"\"\n    version = sys.version_info\n    version_str = f\"{version.major}.{version.minor}.{version.micro}\"\n\n    if version.major == 3 and version.minor >= 6:\n        return True, version_str\n    else:\n        return False, version_str\n\n\ndef get_installed_version(package_name: str) -> Optional[str]:\n    \"\"\"获取已安装包的版本\"\"\"\n    try:\n        # 特殊处理 PyYAML\n        if package_name == 'yaml':\n            try:\n                import yaml\n                return getattr(yaml, '__version__', '6.0.1')  # PyYAML 6.0.1\n            except ImportError:\n                return None\n\n        # 特殊处理 colorlog（没有标准版本属性）\n        if package_name == 'colorlog':\n            try:\n                import colorlog\n                # colorlog 没有 __version__ 属性，返回已知版本\n                return SPECIAL_PACKAGE_VERSIONS.get('colorlog',",
+        "成果本身\\代码工程\\UAV_Communication_GA\\combined\\_init_.py": "\"\"\"\n综合联调系统\n组合距离、遮挡、干扰、速度四个中间件进行全局优化（三维版本）\n总通信劣化程度 = W₁ × D₁(d) + W₂ × D₂(o) + W₃ × D₃(i) + W₄ × D₄(v)\n\"\"\"\nimport numpy as np\n\nfrom .combined import (\n    CombinedDegradationModel,\n    CombinedOptimizer\n)\n\n__all__ = [\n    'CombinedDegradationModel',\n    'CombinedOptimizer'\n]\n\n__version__ = '2.0.0'\n__author__ = '无人机通信优化系统'\n\n# 包级别的默认配置\nDEFAULT_PARAMETERS = {\n    'default_weights': {\n        'distance': 0.3,\n        'obstruction': 0.2,\n        'interference': 0.3,\n        'velocity': 0.2\n    },\n    'variable_ranges': {\n        'gs_position': [0, 1000],\n        'obstruction_position': [0, 1000],\n        'obstruction_height': [0, 100],\n        'interference_position': [0, 1000],\n        'interference_height': [0, 100],\n        'interference_frequency': [100e6, 6000e6],\n        'interference_bandwidth': [1e6, 100e6],\n        'interference_power': [0.1, 10],\n        'uav_velocities': [0, 50]\n    }\n}\n\n\ndef get_module_info():\n    \"\"\"返回模块信息\"\"\"\n    return {\n        'name': '三维综合联调系统',\n        'version': __version__,\n        'description': '组合四个因素进行无人机通信劣化程度全局优化（支持三维空间）',\n        'author': __author__,\n        'main_classes': __all__,\n        'formula': '总通信劣化程度 = W₁ × D₁(d) + W₂ × D₂(o) + W₃ × D₃(i) + W₄ × D₄(v)',\n        'features': ['三维距离计算', '三维遮挡模型', '三维干扰模型', '高度感知优化']\n    }\n\n\ndef quick_test():\n    \"\"\"快速测试函数\"\"\"\n    print(\"三维综合联调系统快速测试...\")\n\n    # 创建测试无人机位置（三维）\n    uav_positions = np.ar"
+      }
+    },
+    {
+      "label": "论文草稿与写作材料",
+      "src": "D:\\UAV_Communication_GA\\论文",
+      "dest": "D:\\论文无人机\\成果本身\\论文草稿\\论文",
+      "task_type": "成果",
+      "summary": "该目录包含论文初稿，是无人机论文线现有写作成果的直接载体。",
+      "writing_value": "后续论文继续写作、改写和结构优化时可直接在此基础上推进。",
+      "source_entries": [],
+      "file_count": 1,
+      "top_files": [
+        "成果本身\\论文草稿\\论文\\论文初稿.docx"
+      ],
+      "previews": {
+        "成果本身\\论文草稿\\论文\\论文初稿.docx": "基于遗传算法与生成对抗网络的无人机通信性能评估模型\n北京交通大学 自动化与智能学院 电磁兼容实验室 周正阳\n摘要：随着无人机技术的发展，利用无人机组网进行局部通信的技术正在成为新的无线通信手段，这对无人机通信性能评估提出了要求。本研究针对无人机通信的特点，提出了基于遗传算法与生成对抗网络的无人机通信性能评估模型。通过提出的一种城市与干扰源的建模方法，进行无人机通信场景视角下的城市建模与干扰源建模，获得所需的评估模型环境，在此环境的基础上，利用信号干扰噪声比（SINR）和无人机飞行通信能耗为评估底座进行了综合通信劣化评估公式的设计。\n以此评估公式为基准函数，使用遗传算法（GA）和生成对抗网络（GAN）进行综合劣化评估，从而获得在环境模型中，使得无人机通信性能最劣的城市、无人机、干扰源的相对位置关系、无人机飞行速度、干扰信号等相关数据。并通过与随机分布下的无人机通信场景进行了对比，证明了该模型对于无人机通信性能极限情况下的评估意义。\n0 引言"
+      }
+    },
+    {
+      "label": "无人机参考文献",
+      "src": "D:\\UAV_Communication_GA\\key reference",
+      "dest": "D:\\论文无人机\\参考文献\\论文文献\\key reference",
+      "task_type": "参考",
+      "summary": "该目录系统整理了无人机通信、轨迹优化、链路评估、仿真证据链等文献，是论文无人机线的核心参考库。",
+      "writing_value": "可直接为引言、相关工作、方法依据和实验对照提供文献支撑。",
+      "source_entries": [],
+      "file_count": 43,
+      "top_files": [
+        "参考文献\\论文文献\\key reference\\A Synthetic Dataset for 5G UAV Attacks Based on.pdf",
+        "参考文献\\论文文献\\key reference\\Aerial_RF_and_Throughput_Measurements_on_a_Non-Standalone_5G_Wireless_Network.pdf",
+        "参考文献\\论文文献\\key reference\\Analysis_and_Prediction_of_Coverage_and_Channel_Rank_for_UAV_Networks_in_Rural_Scenarios_With_Foliage.pdf",
+        "参考文献\\论文文献\\key reference\\Genetic Algorithm-Based Placement and Resource.pdf",
+        "参考文献\\论文文献\\key reference\\Robust trajectory planning for UAV.pdf",
+        "参考文献\\论文文献\\key reference\\通信评估公式方法_底层变量的影响思路\\A survey of energy efficient methods for UAV communication.pdf",
+        "参考文献\\论文文献\\key reference\\无人机通信组网总体背景\\A survey on UAV-assisted wireless communications Recent advances and future trends（Computer Communication Elsevier）.pdf",
+        "参考文献\\论文文献\\key reference\\通信评估公式方法_底层变量的影响思路\\Air-to-GroundOutdoorPathLossModelV5.1_20140806_GLOBECOM.pdf",
+        "参考文献\\论文文献\\key reference\\高度、路损、干扰耦合考虑\\Analytical framework for UAV enabled wireless communication with D2D networks.pdf",
+        "参考文献\\论文文献\\key reference\\相关类似研究\\Anti-Jamming based on Beam-Steering Antennas.pdf",
+        "参考文献\\论文文献\\key reference\\仿真底座证据链\\Cellular localizability of unmanned aerial vehicles.pdf",
+        "参考文献\\论文文献\\key reference\\高度、路损、干扰耦合考虑\\Cellular localizability of unmanned aerial vehicles.pdf"
+      ],
+      "previews": {
+        "参考文献\\论文文献\\key reference\\A Synthetic Dataset for 5G UAV Attacks Based on.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\论文文献\\key reference\\Aerial_RF_and_Throughput_Measurements_on_a_Non-Standalone_5G_Wireless_Network.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\论文文献\\key reference\\Analysis_and_Prediction_of_Coverage_and_Channel_Rank_for_UAV_Networks_in_Rural_Scenarios_With_Foliage.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "无人机研究_代码工程与设计文档",
+      "src": "D:\\无人机通信系统抗干扰性能的测试评估技术研究",
+      "dest": "D:\\论文无人机\\成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计",
+      "task_type": "成果",
+      "summary": "该节点汇总无人机测试评估技术研究目录中的 0315 论文级工程、早期模块工程以及代码设计说明文档，是论文无人机线的重要补充成果。",
+      "writing_value": "可直接支撑论文方法、代码实现、参数设计与城市模型生成逻辑说明。",
+      "source_entries": [
+        "0315",
+        "UAV_Communication_GA",
+        "代码",
+        "代码.docx",
+        "城市模型生成.docx",
+        "数据标定.docx",
+        "最终代码.docx"
+      ],
+      "file_count": 139,
+      "top_files": [
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\bler_mc.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\bler_sionna.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\compare_measured_cornercases.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\compare_random_ga_gan.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\evaluate.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\gan_uav_pipeline.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\kpi.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\UAV_Communication_GA\\main.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\plot_results.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\quick_demo_pipeline.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\UAV_Communication_GA\\requirements.py",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\UAV_GA.py"
+      ],
+      "previews": {
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\bler_mc.py": "from __future__ import annotations\n\nimport argparse\nimport csv\nfrom dataclasses import dataclass\nfrom typing import Iterable, List, Tuple\n\nimport numpy as np\n\n\ndef _qpsk_map(bits: np.ndarray) -> np.ndarray:\n    # bits shape: (N, 2) -> symbols shape: (N,)\n    b0 = bits[:, 0].astype(np.float32)\n    b1 = bits[:, 1].astype(np.float32)\n    # Gray mapping: 00->(1+1j), 01->(1-1j), 11->(-1-1j), 10->(-1+1j)\n    i = 1.0 - 2.0 * b0\n    q = 1.0 - 2.0 * b1\n    s = (i + 1j * q) / np.sqrt(2.0)\n    return s.astype(np.complex64)\n\n\ndef _qpsk_demod_hard(symbols: np.ndarray) -> np.ndarray:\n    i = (np.real(symbols) < 0.0).astype(np.int8)\n    q = (np.imag(symbols) < 0.0).astype(np.int8)\n    return np.stack([i, q], axis=1)\n\n\ndef _qam16_map(bits: np.ndarray) -> np.ndarray:\n    # bits shape: (N, 4) Gray mapping with levels {-3,-1,1,3}, normalized\n    b0, b1, b2, b3 = [bits[:, k].astype(np.int8) for k in range(4)]\n\n    def gray_2bit_to_level(msb: np.ndarray, lsb: np.ndarray) -> np.ndarray:\n        # 00->-3, 01->-1, 11->+1, 10->+3\n        lvl = np.empty_like(msb, dtype=np.float32)\n        m0 = (msb == 0) & (lsb == 0)\n        m1 = (msb == 0) & (lsb == 1)\n        m2 = (msb == 1) & (lsb == 1)\n        m3 = (msb == 1) & (lsb == 0)\n        lvl[m0] = -3.0\n        lvl[m1] = -1.0\n        lvl[m2] = 1.0\n        lvl[m3] = 3.0\n        return lvl\n\n    i = gray_2bit_to_level(b0, b1)\n    q = gray_2bit_to_level(b2, b3)\n",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\bler_sionna.py": "from __future__ import annotations\n\nimport argparse\nimport csv\nimport os\nfrom dataclasses import dataclass\nfrom typing import Iterable, Tuple\n\nimport numpy as np\n\n\n@dataclass(frozen=True)\nclass SionnaConfig:\n    modulation: str = \"qpsk\"  # qpsk|16qam\n    n_bits_per_block: int = 1024\n    n_blocks: int = 400\n    seed: int = 0\n    channel: str = \"awgn\"  # awgn|rician\n    rician_k: float = 5.0\n\n\ndef _require_sionna():\n    try:\n        import tensorflow as tf  # noqa: F401\n        import sionna  # noqa: F401\n    except Exception as e:  # pragma: no cover\n        raise ImportError(\n            \"Sionna/TensorFlow not available. Install tensorflow + sionna first, \"\n            \"or provide an existing BLER_B.csv LUT.\"\n        ) from e\n\n\ndef simulate_bler_curve_sionna(\n    sinr_db_grid: Iterable[float],\n    cfg: SionnaConfig = SionnaConfig(),\n) -> Tuple[np.ndarray, np.ndarray]:\n    _require_sionna()\n\n    import tensorflow as tf\n    # Sionna v1.x namespace\n    from sionna.phy.mapping import BinarySource, Constellation, Mapper, Demapper\n    from sionna.phy.channel import AWGN\n\n    mod = str(cfg.modulation).strip().lower()\n    if mod not in (\"qpsk\", \"16qam\"):\n        raise ValueError(\"modulation must be 'qpsk' or '16qam'\")\n\n    bits_per_sym = 2 if mod == \"qpsk\" else 4\n    n_bits = int(max(cfg.n_bits_per_block, bits_per_sym))\n    n_bits = int((n_bits // bits_per_sym) * bits_per_sym)\n    n_sy",
+        "成果本身\\代码工程\\无人机通信测试评估技术研究_代码与设计\\0315\\compare_measured_cornercases.py": "from __future__ import annotations\n\nimport argparse\nimport csv\nimport io\nimport json\nimport math\nimport os\nimport zipfile\nfrom dataclasses import asdict, dataclass, replace\nfrom pathlib import Path\nfrom types import MethodType\nfrom typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple\n\nimport matplotlib\nimport numpy as np\n\nmatplotlib.use(\"Agg\")\nimport matplotlib.pyplot as plt  # noqa: E402\n\nfrom UAV_GA import DroneCommProblem, InterferenceSource\nimport gan_uav_pipeline as gan_pipeline\nfrom kpi import outage_probability, summarize_distribution, tail_mean\n\n\nDEFAULT_AERPAW_ZIP = r\"d:\\Downloads\\aerpaw-dataset-24.zip\"\nDEFAULT_DRYAD_ZIP = r\"d:\\Downloads\\doi_10_5061_dryad_wh70rxx06__v20250521.zip\"\nDEFAULT_REF_PDF = r\"d:\\UAV_Communication_GA\\key reference\\Aerial_RF_and_Throughput_Measurements_on_a_Non-Standalone_5G_Wireless_Network.pdf\"\n\nAERPAW_NR_FILES = (\n    \"aerpaw-dataset-24/Logs/pawprints_5G_NR_altitude30m_flight1.csv\",\n    \"aerpaw-dataset-24/Logs/pawprints_5G_NR_altitude30m_flight2.csv\",\n)\nAERPAW_THR_FILES = (\"aerpaw-dataset-24/Logs/pawprints_iperf_throughput_altitude30m_flight1.csv\",)\nDRYAD_SINR_FILES = (\n    \"Dryad/yaw45/inputf1_sinr_with_header.csv\",\n    \"Dryad/yaw315/inputf1_sinr_with_header.csv\",\n)\nDRYAD_THR_FILES = (\n    \"Dryad/yaw45/input_throughput_with_header.csv\",\n    \"Dryad/yaw315/input_throughput_with_header.csv\",\n)\n\n\ndef _base_user_params() -> Dict["
+      }
+    },
+    {
+      "label": "无人机研究_论文报告与汇报材料",
+      "src": "D:\\无人机通信系统抗干扰性能的测试评估技术研究",
+      "dest": "D:\\论文无人机\\成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报",
+      "task_type": "成果",
+      "summary": "该节点收纳无人机测试评估技术研究目录中的论文级报告、大纲、组会材料和中间文档，可作为论文写作与阶段汇报的连续证据链。",
+      "writing_value": "有利于快速复用已经形成的长报告、短报告和汇报 PPT 内容，保持写作和汇报口径一致。",
+      "source_entries": [
+        "组会",
+        "1223",
+        "1224",
+        "小论文前期.pptx",
+        "无人机通信劣化-论文大纲_公式渲染版.docx",
+        "无人机通信劣化-论文大纲_公式渲染版.pdf",
+        "无人机通信劣化-论文级报告.docx",
+        "无人机通信劣化-论文级报告.pdf",
+        "无人机通信劣化_极简报告.pptx"
+      ],
+      "file_count": 23,
+      "top_files": [
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文大纲_公式渲染版.docx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文大纲_公式渲染版.pdf",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文级报告.docx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文级报告.pdf",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\组会\\251205.pdf",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\1223\\新建 DOCX 文档 (2).docx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\1223\\新建 DOCX 文档 (3).docx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\1223\\新建 DOCX 文档.docx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\1224\\新建 DOCX 文档.docx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\小论文前期.pptx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化_极简报告.pptx",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\组会\\251121.pptx"
+      ],
+      "previews": {
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文大纲_公式渲染版.docx": "无人机通信劣化场景优化：模型、公式与数据标定（论文大纲版）\n（去除代码段与截图；所有公式以 LaTeX 渲染形式插入）\n摘要：本文面向“无人机通信劣化场景优化”任务，给出论文级大纲与关键模型/公式/数据标定流程。重点覆盖：城市场景生成、A2G/U2U/无人机-干扰源路径损耗与遮挡判定、干扰源类型化标定与生成、飞行速度-能耗模型、通信劣化指标与遗传算法求解框架。所有参数取值与依据均来自用户提供文档与可公开检索的标准/论文，引用以 [n] 标注，文末给出参考文献列表。\n1 引言与问题定义\n目标：在城市多源干扰环境下，联合优化无人机飞行状态与受控干扰配置，使通信链路指标（如接收功率、SINR、速率、可靠性）出现可度量的“劣化”，并可解释其物理成因。模型需要同时支持 A2G、U2U 与 UAV-干扰源链路，并考虑建筑遮挡与室内/穿透损耗。[1–7][18–21]\n2 城市生成模型：方法、公式与可标定参数\n2.1 仿真区域与基础密度参数\n城市仿真区域通常采用矩形或多边形地块；以矩形为例，面积为式(1)。建筑、道路、干扰源“候选点”的数量通常由密度参数与面积共同决定（泊松或均匀采样）。[23][9]\n(1) 城市仿真区域面积（矩形）\n(2) 建筑物数量的泊松采样（示例）\n2.2 建筑物几何采样与高度分布\n建筑物几何参数可分为：平面投影（中心点/长宽/朝向）与高度。若缺少真实 GIS 数据，可采用“分布-参数化”方法：宽度/高度分别从经验分布采样（式(3)），并通过场景约束（道路缓冲、建筑间距等）保证可行性。[23][24]\n(3) 建筑物宽度/高度的分布采样（由标定分布给定）\n2.3 背景点过程与三维扩展\n当需要刻画城市中大规模随机设施（如 Wi‑Fi AP、室内热点、屋顶设备）时，可用泊松点过程（PPP）建模二维平面分布，并用独立的高度分布扩展为 3D（式(4)–(5)）。该思想在密集城市场景的随机几何建模中常见。[23][24]\n(4) 2D 泊松点过程与点数\n(5) 3D 高度分布的分离建模\n3 路径损耗、遮挡判定与概率后备模型",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文大纲_公式渲染版.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "成果本身\\论文草稿\\无人机通信测试评估技术研究_报告与汇报\\无人机通信劣化-论文级报告.docx": "无人机通信性能劣化场景优化模型与高级遗传算法实现\n——方法、公式、数据标定与代码对照（论文级技术报告）\n作者：cra（用户提供代码与数据）\n生成时间：2026-01-02\n摘要\n本报告面向“无人机通信性能劣化场景优化”代码实现（文件：UAV_GA.py）与用户提供的标定材料，系统梳理城市生成模型、A2G/U2U/无人机-干扰源传播与遮挡判定、干扰源标定与随机生成、无人机速度与能耗模型、总体通信劣化指标与创新点，以及遗传算法（geatpy）最终实现形式。报告严格遵循“不得编造”的要求：所有公式、参数与数据均来自（1）用户提供代码与附件、（2）后续公开文献检索（引用到参考文献）。对无法从可用来源中核验的数值，本文明确标注为“待标定/待补齐”。\n关键词：无人机通信；A2G/U2U；城市随机几何；LoS概率；路径损耗；室内传播；建筑进入损耗；干扰源标定；遗传算法；通信劣化指标\n第一章 城市生成模型：方法、公式与代码对应\n1.1 模型目标与输入参数\n城市生成模块位于 ScenarioGenerator 类中（见代码[1]）。其目标是在给定仿真区域（正方形，边长 area_size 米）内，生成建筑物集合、语义层（road/sidewalk/roof/indoor 等）以及用于遮挡判定的空间索引。主要输入参数包括：area_size、building_density（期望覆盖率）、building_height_range、environment_type（dense_urban/urban/suburban/rural）、以及语义层宽度参数等。\n1.2 基于 α–β–γ 的城市形态参数化\n代码采用 Al‑Hourani 等在 A2G 模型中使用的城市形态参数（α, β, γ）来描述不同场景（dense_urban/urban/suburban/rural）的统计特征。其中：α 为建筑覆盖率（built-up area ratio），β 为建筑密度（buildings/km²），γ 为建筑高度 Rayleigh 分布的尺度参数。相关环境参数表在代码常量 AL_HOURANI_ENV_PARAMS 中给出（见 Listing 1）。该参数化与文献中用于 A2G LoS 统计建模的设定一致。[2]\n1.3 建筑宽度 W 与街道宽度 S 的推导\n根据 α 与 β，可推导平均建筑宽度 W 与平均街道宽度 S（代码注释标明“from ITU / Al‑Hourani parameterization”）。代码采用如下关系：\nW = 1000 * sqrt(α / β)   （单位：m）\n(1)\nS = 1000 / sqrt(β) − W    （单位：m）\n(2)"
+      }
+    },
+    {
+      "label": "无人机研究_专题论文与参考资料",
+      "src": "D:\\无人机通信系统抗干扰性能的测试评估技术研究",
+      "dest": "D:\\论文无人机\\参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料",
+      "task_type": "参考",
+      "summary": "该节点汇总无人机测试评估技术研究目录中的专题论文、标准、压缩包与改进方向资料，是论文无人机线新增的专题参考资料库。",
+      "writing_value": "可直接用于补充综述、路径损耗建模、干扰机理、测试标准和改进方向论证。",
+      "source_entries": [
+        "论文",
+        "1220论文",
+        "1222论文",
+        "改进"
+      ],
+      "file_count": 86,
+      "top_files": [
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\001-EARTHWP2D23v2.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\0908.3539v1.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\1005.0734v1.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\1222论文\\20230131-____________-CN-DWP0013_Issue_1-01_Testing_the_risk_of_jamming_to_safety-critical_systems.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\论文\\5G_and_Beyond_Interference_Management-HAL-2023.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\A_Comprehensive_Study_On_Enterprise_Wi-Fi_Access_P.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\论文\\A_Tutorial_on_UAVs_for_Wireless_Networks_Applications_Challenges_and_Open_Problems.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\1220论文\\Accessing_From_the_Sky_A_Tutorial_on_UAV_Communications_for_5G_and_Beyond.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\论文\\Accessing_From_the_Sky_A_Tutorial_on_UAV_Communications_for_5G_and_Beyond.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\1220论文\\Aerial-Ground_Interference_Mitigation_for_Cellular-Connected_UAV.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\1220论文\\An_Overview_of_3GPP_Release-15_Study_on_Enhanced_LTE_Support_for_Connected_Drones.pdf",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\论文\\Analysis of the relationship between electromagnetic radiation.pdf"
+      ],
+      "previews": {
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\001-EARTHWP2D23v2.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\0908.3539v1.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\论文文献\\无人机通信测试评估技术研究_专题论文与参考资料\\改进\\1005.0734v1.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "无人机研究_测试标定与实验建设资料",
+      "src": "D:\\无人机通信系统抗干扰性能的测试评估技术研究",
+      "dest": "D:\\论文无人机\\参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设",
+      "task_type": "参考",
+      "summary": "该节点保留无人机测试评估技术研究目录中的干扰源标定和实验室建设资料，可作为论文无人机线的测试依据与实验条件说明来源。",
+      "writing_value": "适合用于说明参数标定依据、实验环境构建和测试评估技术路线。",
+      "source_entries": [
+        "干扰源数据标定",
+        "实验室建设"
+      ],
+      "file_count": 18,
+      "top_files": [
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\实验室建设\\2建设方案(1).docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_screenshots_pack (1).pdf",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_screenshots_pack_v3.pdf",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_screenshots_pack_v4.pdf",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_screenshots_pack_v5.pdf",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\实验室建设\\信息安全实验室建设方案（包1通用及车辆专用信息安全工具）-修改版(1).docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\实验室建设\\实验室建设方案.docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\密度依据.docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\干扰源数据标定.docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\实验室建设\\无人机通信测试梳理.docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\实验室建设\\通信性能实验室建设方案(1).docx",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_images (1).zip"
+      ],
+      "previews": {
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\实验室建设\\2建设方案(1).docx": "北京交通大学-\n中机寰宇认证检验股份有限公司低空智能网络研究中心\n建设方案\n申请单位：电子信息工程学院\n共建合作方：中机寰宇认证检验股份有限公司\n共建周期：\n2025\n年\n6\n月-\n2027\n年\n12\n月\n一、项目背景与目的\n随着全球范围内低空经济战略地位的显著提升，以无人机、电动垂直起降飞行器（eVTOL）为代表的低空无人装备正加速渗透至现代社会的运行脉络，成为重构物流运输、城市管理、应急救援、国防安全等领域底层逻辑的核心载体。根据权威机构的分析预测，2023年我国低空经济市场规模已突破5000亿元大关，预计2030年将有望超过2万亿元。低空经济作为融合空域资源开发、智能装备制造、数字基础设施建设的复合型产业形态，其发展深度直接关联国家空天战略竞争力与数字经济转型效能。在这一进程中，规模化、高密度、高频次的低空无人设备集群化应用已成为不可逆的技术演进方向，但与之相伴的监管复杂性、技术脆弱性、安全不确定性等问题亦呈现指数级增长，需要构建与之匹配的新型技术基础设施体系。\n低空无人化产业本质是通过智能化装备与数字化空地域管理系统的深度融合，实现对低空空域、地面资源的高效开发与精准调度。这一目标的实现高度依赖无人装备在复杂环境下的动态组网、可靠通信、智能协同与抗干扰等能力，具有高动态、灵活性、可靠性、抗干扰能力的通信网络技术是大规模无人装备应用的基础设施。当前，全球主要经济体已将低空经济纳入国家战略竞争框架，通过政策创新、技术标准制定、基础设施投资等多维手段加速产业布局。然而，行业爆发式增长与技术体系迭代速度之间的结构性矛盾日益凸显。无人装备的规模化发展催生了关于大规模测试检验和大规模组网通信需求的爆发式增长，考虑到无人装备事故的重大危害性，强制性检测将成为必然。\n中机寰宇认证检验股份有限公司（简称：中机认检）成立于2003年，总部位于北京，注册资本2.26亿元，是国务院国资委直属中央企业中国机械科学研究总院集团有限公司的控股子公司。中机认检是一家全国性的车辆及机械设备第三方认证、检验检测综合性服务机构，目前有7家子公司及控股公司，主营业务为汽车整车、军用装备、工程机械、特种设备、民航地面设备、零部件等产品检验检测服务，以及产品认证、体系认证和服务认证等认证服务。检验检测业务方面，公司在获得检验检测机构资质认定证书（CMA）和国家认可委实验室认可证书（CNAS）资质基础上，获得国家市场监管管理总局、国家认监委、工信部、交通运输部（民航局）、生态环境部等部委及机构授权30余项资质。认证业务方面，公司是经国家认监委批准的首批从事强制性产品（CCC）认证机构之一，主要提供强制性产品认证、自愿性产品认证、管理体系认证以及服务认证等。除检验检测和认证服务外，公司还为客户提供汽车整车造型创意设计、模型验证和汽车工程设计服务。中机认检为政府决策提供专业化、定制化技术咨询，为企业提供试验检测、智能升级、管理提升等“认、检、研、服”一站式服务。",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_screenshots_pack (1).pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\研究方案与标定\\无人机通信测试评估技术研究_测试标定与实验建设\\干扰源数据标定\\evidence_screenshots_pack_v3.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    }
+  ],
+  "正向设计规范": [
+    {
+      "label": "车载低轨卫星通信系统EMC正向设计研究方案",
+      "src": "D:\\一汽项目\\车载低轨卫星通信系统EMC性能正向设计技术研究方案",
+      "dest": "D:\\正向设计规范\\成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案",
+      "task_type": "成果",
+      "summary": "该目录包含正向设计规范项目的研究方案、标准、对照文件与专题论文，是本条线的核心成果。",
+      "writing_value": "可直接用于规范、方案、项目报告与论文背景撰写。",
+      "source_entries": [],
+      "file_count": 15,
+      "top_files": [
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\1.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\2.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\3.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\Q_FC_XXX-2025_车载低轨卫星通信系统EMC性能正向设计规范.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\无人机通信抗干扰性能的测试评估技术研究-开题报告-周正阳.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\最终稿_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\最终补充_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\正向设计规范0312.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\车载低轨卫星通信系统EMC正向设计规范_专利与标准对照文件.docx",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\论文\\基于近场扫描的移动通信卫星EMC性能评估.pdf",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\标准\\车载卫星通信设备电磁兼容性要求和测量方法.pdf"
+      ],
+      "previews": {
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\1.docx": "好的，这是一个非常深刻的问题。从车载低轨卫星通信系统**自身的特点**出发，来阐述为何必须从这四个层面进行系统性研究，正是EMC正向设计思想的精髓所在。\n车载低轨卫星通信系统并非一个独立的设备，而是一个**嵌入在极端复杂电磁环境中的、同时包含高功率发射和高灵敏度接收的异构系统**。其自身特点决定了EMC问题的复杂性和系统性，具体分析如下：\n---\n### **1. 系统架构层面：解决“自我打架”与“资源争抢”问题**\n*   **系统特点**：系统内部集成了**多个共存的射频前端**，如卫星通信发射机/接收机、GNSS接收机、蜂窝通信模块（4G/5G）等。它们在一个狭小空间内同时工作。\n*   **引发的EMC问题**：\n*   **自干扰**：正如**一汽专利**中指出的，卫星通信发射（大功率）会淹没邻近频段的GNSS接收（极微弱信号），导致定位漂移。这是典型的“自我打架”。\n*   **资源冲突**：多个设备同时收发，会造成时空频域的冲突。\n*   **为何必须研究系统架构**：\n*   事后在电路板级别加滤波器无法根本解决这种系统级、芯片级别的干扰。\n*   **正向设计研究**就是要像**一汽和吉利**那样，在顶层设计**时域隔离、资源调度策略**，从逻辑和时序上避免干扰发生。这好比交通管理系统，不是给每辆车加固，而是设计红绿灯和调度规则，从源头上避免撞车。\n---\n### **2. 天线与射频前端层面：控制电磁能量的“门户”**\n*   **系统特点**：该系统是车辆与外界电磁环境交互的**主要门户**。天线既是能量的“出口”（发射），也是“入口”（接收）。\n*   **引发的EMC问题**：\n*   **干扰他人**：发射机产生的杂散和谐波通过天线辐射出去，会干扰车内其他系统（如收音机、ADAS传感器）。\n*   **被他人干扰**：接收天线会拾取来自车辆电机、控制器等内部噪声以及外部基站、高压线等外部干扰，导致通信质量下降。\n*   **为何必须研究天线与射频**：",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\2.docx": "基于您提供的标准文档《YD/T XXXX.4—XXXX 车载卫星通信设备电磁兼容性要求和测量方法》，我将逐条分析您总结的四个层面中\"引发的EMC问题\"里的每一个要点，并对应到标准中的具体章节、页码和原文内容。\n### **1. 系统架构层面**\n**引发的EMC问题1：自干扰（卫星通信发射干扰GNSS接收）**\n*   **标准对应**：**性能判据A (6.2)**\n*   **所在页码**：P12\n*   **原文内容**：\n> \"试验中和试验后，通信连接应保持，无用户控制功能的丧失或存储数据的丢失，DUT应正常工作，能执行其预先设计的所有功能。对于数据传输业务模式，试验中，数据吞吐量（应用层吞吐量）应不少于参考测试信道最大吞吐量的95%...\"\n*   **分析**：系统内自干扰（如卫星发射干扰GNSS）的直接后果就是通信连接中断或性能降级。标准中的**性能判据A**是所有抗扰度测试的最高要求，它强制要求系统在干扰下（包括系统内自干扰）必须保持连接和95%以上的吞吐量。一汽专利中提出的\"时域隔离\"等系统级策略，其根本目的就是为了在复杂的干扰环境中依然能满足此判据。\n**引发的EMC问题2：资源冲突（多设备同时收发造成的时空频域冲突）**\n*   **标准对应**：**发信机免测频段 (5.5.3)**\n*   **所在页码**：P12\n*   **原文内容**：\n> \"发信机免测频段为发信机工作的中心频率加减2倍DUT的占用带宽。\"\n*   **分析**：标准通过定义\"免测频段\"来规避对自身有用信号的无意义测试，这本身就隐含了对系统工作频段和资源的管理要求。**资源冲突**的本质是频谱和时序的规划不当。吉利专利中的\"资源共享与时序控制\"等策略，正是在系统设计阶段对频谱和时序资源进行规划，以避免冲突，这与标准对频段管理的逻辑一脉相承。虽然标准不直接规定如何调度，但其性能判据（如判据A）是检验资源调度策略是否有效的最终标准。\n### **2. 天线与射频前端层面**\n**引发的EMC问题1：干扰他人（发射机杂散和谐波辐射）**\n*   **标准对应**：**辐射杂散骚扰 (8.1.2.1)**\n*   **所在页码**：P14",
+        "成果本身\\规范方案\\车载低轨卫星通信系统EMC性能正向设计技术研究方案\\3.docx": "### **车载低轨卫星通信系统EMC正向设计技术研究方案**\n#### **1. 系统架构层面：解决\"自我打架\"与\"资源争抢\"问题**\n*   **系统特点**：系统内部集成了**多个共存的射频前端**，如卫星通信发射机/接收机、GNSS接收机、蜂窝通信模块（4G/5G）等。它们在一个狭小空间内同时工作。\n*   **引发的EMC问题**：\n*   **自干扰**：正如**一汽专利**中指出的，卫星通信发射（大功率）会淹没邻近频段的GNSS接收（极微弱信号），导致定位漂移。这是典型的\"自我打架\"。\n*   **标准对应**：**性能判据A (第12页)**\n*   **原文内容**：\"试验中和试验后，通信连接应保持，无用户控制功能的丧失或存储数据的丢失，DUT应正常工作...\"\n*   **资源冲突**：多个设备同时收发，会造成时空频域的冲突。\n*   **标准对应**：**发信机免测频段 (第12页, 5.5.3)**\n*   **原文内容**：\"发信机免测频段为发信机工作的中心频率加减2倍DUT的占用带宽。\"\n*   **为何必须研究系统架构**：\n*   事后在电路板级别加滤波器无法根本解决这种系统级、芯片级别的干扰。\n*   **正向设计研究**就是要像**一汽和吉利**那样，在顶层设计**时域隔离、资源调度策略**，从逻辑和时序上避免干扰发生。这好比交通管理系统，不是给每辆车加固，而是设计红绿灯和调度规则，从源头上避免撞车。\n---\n#### **2. 天线与射频前端层面：控制电磁能量的\"门户\"**\n*   **系统特点**：该系统是车辆与外界电磁环境交互的**主要门户**。天线既是能量的\"出口\"（发射），也是\"入口\"（接收）。\n*   **引发的EMC问题**：\n*   **干扰他人**：发射机产生的杂散和谐波通过天线辐射出去，会干扰车内其他系统（如收音机、ADAS传感器）。"
+      }
+    },
+    {
+      "label": "EMC正向设计写作模板参考",
+      "src": "D:\\一汽项目\\EMC正向设计写作模板参考",
+      "dest": "D:\\正向设计规范\\参考文献\\模板案例\\EMC正向设计写作模板参考",
+      "task_type": "参考",
+      "summary": "该目录整理了多篇 EMC 正向设计参考案例，是正向设计规范线的重要模板资源。",
+      "writing_value": "适合借鉴结构、术语、表述方式与章节安排。",
+      "source_entries": [],
+      "file_count": 6,
+      "top_files": [
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\机载机电管理计算机电磁兼容正向设计方法.pdf",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\某大型卫星电磁兼容性设计与验证_崔相臣.pdf",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\汽车雷达误报警整改分析及整车EMC正向设计_张高杰.pdf",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\空间站用舱内风机电磁兼容性设计.pdf",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\车辆零部件电磁兼容设计与应用.pdf",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\飞行控制计算机电磁兼容正向设计方法.pdf"
+      ],
+      "previews": {
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\机载机电管理计算机电磁兼容正向设计方法.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\某大型卫星电磁兼容性设计与验证_崔相臣.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\模板案例\\EMC正向设计写作模板参考\\汽车雷达误报警整改分析及整车EMC正向设计_张高杰.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "项目总结报告",
+      "src": "D:\\一汽项目\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+      "dest": "D:\\正向设计规范\\参考文献\\技术报告\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+      "task_type": "参考",
+      "summary": "该报告从项目层面总结电动智能网联汽车电磁兼容仿真验证技术研究，是正向设计规范线的背景与论证材料。",
+      "writing_value": "可为项目意义、工程背景和综合结论部分提供成熟表述。",
+      "source_entries": [],
+      "file_count": 1,
+      "top_files": [
+        "参考文献\\技术报告\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx"
+      ],
+      "previews": {
+        "参考文献\\技术报告\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx": "中国第一汽车股份有限公司\n技术开发项目总结报告\n■\n产品技术\n□\n基础技术\n项目名称：\n电动智能网联汽车电磁兼容仿真验证技术研究\n起止时间：\n2022.01-2023.12\n承担单位：\n北京交通大学\n负\n责\n人：\n张凯\n审\n核："
+      }
+    },
+    {
+      "label": "一汽项目_根目录方案简版与定稿",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\正向设计规范\\成果本身\\规范方案\\一汽项目_根目录方案简版与定稿",
+      "task_type": "成果",
+      "summary": "该节点汇总一汽项目根目录中的方案定稿、一页纸与两页纸版本，是正向设计规范线补齐不同交付粒度的重要成果位。",
+      "writing_value": "适合在规范、方案、汇报摘要与对外沟通版本之间快速切换内容粒度。",
+      "source_entries": [
+        "车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "车载低轨卫星通信系统EMC性能正向设计技术研究方案（两页纸简化版）.docx",
+        "车载低轨卫星通信系统EMC性能正向设计研究方案（一页纸简化版）.docx",
+        "（两页纸简化版）车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "（一页纸简化版）车载低轨卫星通信系统EMC性能正向设计研究方案.docx",
+        "（一页纸简化版）车载低轨卫星通信系统EMC性能正向设计研究方案 - 副本.docx",
+        "最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx"
+      ],
+      "file_count": 7,
+      "top_files": [
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\车载低轨卫星通信系统EMC性能正向设计技术研究方案（两页纸简化版）.docx",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\车载低轨卫星通信系统EMC性能正向设计研究方案（一页纸简化版）.docx",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\（一页纸简化版）车载低轨卫星通信系统EMC性能正向设计研究方案 - 副本.docx",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\（一页纸简化版）车载低轨卫星通信系统EMC性能正向设计研究方案.docx",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\（两页纸简化版）车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx"
+      ],
+      "previews": {
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx": "车载低轨卫星通信系统EMC正向设计研究方案\n1 引言\n随着汽车电动化、智能化、网联化快速发展，车载电磁环境日趋复杂，车载低轨卫星通信系统的应用面临着：\n系统内多射频模块共存，以及车辆本身存在的电机、控制器等强干扰源\n的问题\n，使得电磁兼容性问题成为影响车载卫星通信系统稳定性和可靠性的关键因素。\n由于\n事后\n进行电磁兼容\n整改的传统开发模式成本高昂、周期漫长\n，要\n确保卫星通信系统与车辆其他电子系统稳定、可靠地共存，必须在设计初期系统性地考虑电磁兼容性\n，进行相关系统的EMC正向设计\n。\n本方案基于\n车载低轨卫星系统特点，并结合\n对主流车企相关专利技术的分析\n和通信",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx": "车载低轨卫星通信系统EMC正向设计研究方案\n北京交通大学 电磁安全与电磁防护研究所 周正阳\n1 引言\n随着汽车电动化、智能化、网联化快速发展，车载电磁环境日趋复杂，车载低轨卫星通信系统的应用面临着：\n系统内多射频模块共存，以及车辆本身存在的电机、控制器等强干扰源\n的问题\n，使得电磁兼容性问题成为影响车载卫星通信系统稳定性和可靠性的关键因素。\n由于\n事后\n进行电磁兼容\n整改的传统开发模式成本高昂、周期漫长\n，要\n确保卫星通信系统与车辆其他电子系统稳定、可靠地共存，必须在设计初期系统性地考虑电磁兼容性\n，进行相关系统的EMC正向设计\n。\n本方案基于\n车载低轨卫星系统特点，并结合\n对主流车企相关专利技术的分析",
+        "成果本身\\规范方案\\一汽项目_根目录方案简版与定稿\\车载低轨卫星通信系统EMC性能正向设计技术研究方案（两页纸简化版）.docx": "车载低轨卫星通信系统EMC性能正向设计技术研究方案（两页纸简化版）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n1. 研究背景与需求\n汽车电动化、智能化、网联化加速发展，车载电磁环境日趋复杂（电机/控制器/高压线束等强干扰源叠加）。\n车载低轨卫星通信系统同时具备高功率发射与高灵敏接收特性，且常与GNSS、4G/5G等多射频模块在狭小空间共存，极易产生自干扰与共存冲突。\n传统“事后整改”开发模式成本高、周期长，亟需在设计初期开展系统级EMC正向设计，实现“预测—规避—抑制—验证”的闭环。\n2. 研究目标与评价指标（对标YD/T 4517.4—2024）\n满足标准规定的骚扰发射限值与抗扰度等级要求：做到“不干扰外界、不被外界干扰”。\n满足关键性能判据：试验中/后连接保持、功能无丢失；数据业务模式下吞吐量不低于参考测试信道最大吞吐量的95%（判据A）。\n形成可执行的EMC正向设计方法体系：从系统架构到硬件实现给出设计策略、检查清单、仿真与试验验证流程。\n3. 拟解决的关键问题\n多射频共存导致的系统级自干扰与资源冲突（卫星发射对邻频/同频敏感接收的淹没、模块同时发射叠加效应）。\n天线与射频前端的“强发射/弱接收”矛盾引发的辐射发射与辐射抗扰度难题（杂散、谐波、带外噪声与外场强辐射）。\n数字高速电路与射频电路混合集成导致的共阻抗耦合与噪声外泄（电源/地回流路径、缝隙辐射、端口传导）。\n长距离线束与并行布线造成的容/感耦合、环路天线效应与连接器搭接问题（传导发射/抗扰度风险）。\n4. 研究内容与技术路线\n系统架构层：面向共存的时域隔离、频谱/时序资源调度与接口约束；通过软件策略在源头避免干扰发生。\n天线与射频层：波束赋形（干扰方向零点）、射频链路滤波/双工与谐波抑制、天线位置与方向性优化，降低杂散辐射并提升抗扰度。"
+      }
+    },
+    {
+      "label": "一汽项目_项目总结与学位论文材料",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\正向设计规范\\参考文献\\技术报告\\项目总结与学位论文材料",
+      "task_type": "参考",
+      "summary": "该节点收纳一汽项目中的项目总结报告与学位论文终稿，可作为正向设计规范线的背景论证和长文献参考材料。",
+      "writing_value": "适合提炼项目意义、研究现状和较完整的论证表达。",
+      "source_entries": [
+        "00 技术开发项目总结报告.docx",
+        "技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+        "16111047-宋亚丽-博士学位论文终稿.doc"
+      ],
+      "file_count": 3,
+      "top_files": [
+        "参考文献\\技术报告\\项目总结与学位论文材料\\00 技术开发项目总结报告.docx",
+        "参考文献\\技术报告\\项目总结与学位论文材料\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+        "参考文献\\技术报告\\项目总结与学位论文材料\\16111047-宋亚丽-博士学位论文终稿.doc"
+      ],
+      "previews": {
+        "参考文献\\技术报告\\项目总结与学位论文材料\\00 技术开发项目总结报告.docx": "中国第一汽车股份有限公司\n技术开发项目总结报告\n■\n产品技术\n□\n基础技术\n项目名称：\n电动智能网联汽车电磁兼容仿真验证技术研究\n起止时间：\n2022.01-2023.12\n承担单位：\n北京交通大学\n负\n责\n人：\n张凯\n审\n核：",
+        "参考文献\\技术报告\\项目总结与学位论文材料\\技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx": "中国第一汽车股份有限公司\n技术开发项目总结报告\n■\n产品技术\n□\n基础技术\n项目名称：\n电动智能网联汽车电磁兼容仿真验证技术研究\n起止时间：\n2022.01-2023.12\n承担单位：\n北京交通大学\n负\n责\n人：\n张凯\n审\n核："
+      }
+    },
+    {
+      "label": "一汽项目_标准与对标参考合集",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\正向设计规范\\参考文献\\标准与对标\\一汽项目参考文献合集",
+      "task_type": "参考",
+      "summary": "该节点汇总一汽项目根目录中的标准、车载卫星通信资料和参考文献目录，是正向设计规范线补充标准与对标依据的集合位。",
+      "writing_value": "可用于补充标准引用、术语定义、竞品参考和技术边界说明。",
+      "source_entries": [
+        "参考文献",
+        "车载卫星通信系统"
+      ],
+      "file_count": 17,
+      "top_files": [
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\卫星通信方法、存储介质、控制器及车辆.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\卫星通讯终端及车辆.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\基于低轨卫星的车载通信方法、系统及车载控制设备.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\基于卫星的通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\基于卫星通信的车联网数据压缩方法、装置、设备和介质.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\车载卫星通信方法、装置、设备及存储介质.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\车载卫星通信系统、方法、设备、存储介质、程序产品和车辆.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\车载卫星通信系统及车辆 (1).pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\车载卫星通信系统\\车载卫星通信系统及车辆.pdf",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\车载卫星通信系统收发能力下线检测方法、装置、设备及介质.pdf"
+      ],
+      "previews": {
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\一种行驶行为的确定方法、装置、车辆及存储介质.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\卫星通信方法、存储介质、控制器及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\标准与对标\\一汽项目参考文献合集\\参考文献\\卫星通讯终端及车辆.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。"
+      }
+    },
+    {
+      "label": "一汽项目_试验室仿真技术简版资料",
+      "src": "D:\\一汽项目",
+      "dest": "D:\\正向设计规范\\参考文献\\技术报告\\一汽项目试验室仿真技术简版资料",
+      "task_type": "参考",
+      "summary": "该节点收纳一汽项目根目录中的试验室仿真技术一页纸、两页纸和格式整理稿，可作为规范线的补充简版说明材料。",
+      "writing_value": "适合在规范编制、阶段汇报和方案摘要中复用已有简版技术文字。",
+      "source_entries": [
+        "试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+        "试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+        "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "lab_emc_sim_one_page.docx",
+        "lab_emc_sim_two_page.docx",
+        "最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx"
+      ],
+      "file_count": 9,
+      "top_files": [
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\lab_emc_sim_one_page.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\lab_emc_sim_two_page.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx"
+      ],
+      "previews": {
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\lab_emc_sim_one_page.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究方案（一页纸）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n背景与目标\n• 解决实验室测试难以复现真实在轨/典型应用场景多源耦合干扰的问题，降低“实验室-在轨”偏差。\n• 形成“实测-建模-仿真-智能生成-验证”闭环，实现通信性能与EMC（骚扰/抗扰度）联合评估与可移植用例生成。\n关键研究内容\n• 实验测量：微波暗室/GNSS暗箱采集链路指标与干扰响应，形成基准数据集。\n• 模型抽象：拟合接口函数/节点库，完成仿真参数对齐与外推。\n• EMC仿真：集成骚扰测量（辐射杂散/辐射/传导）与抗扰度（辐射、BCI、ESD等），嵌入标准限值与性能判据。\n• 智能用例：干扰特征库 + GA/GAN 生成最恶劣/罕见场景，驱动单星与多星组网压力测试。\n• 闭环验证：仿真-实测对标，输出用例库、评分与防护建议。\n研究内容示意图\n图1 研究内容示意图\n预期成果\n• “干扰-响应”实验基准数据集 + 接口函数/节点库。\n• 面向标准的EMC/通信联合仿真平台与可复用测试流程。\n• 典型与极限干扰用例库（含生成方法）及评估报告模板/防护建议。",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\lab_emc_sim_two_page.docx": "试验室环境下低轨卫星通信系统EMC仿真技术研究方案（两页纸）\n北京交通大学 电磁安全与电磁防护研究所  周正阳\n1 背景与研究意义\n低轨卫星通信系统快速发展，通信抗干扰性能与电磁兼容性（EMC）评估成为保障系统可靠性的关键环节。\n传统实验室测试难以复现“多干扰源耦合+动态组网”综合效应，导致测试结果与在轨性能存在偏差。\n亟需将行业标准要求（骚扰/抗扰度限值、性能判据）与通信性能指标统一到可复用的仿真-实测闭环流程中。\n2 研究目标\n构建覆盖“单星链路-多星动态组网”的实验室EMC/通信联合仿真与评估方法。\n建立贴近典型应用场景的干扰模型与干扰特征库，并实现极限压力用例的智能生成。\n形成可移植的测试用例生成方法、标准化评估报告与防护建议，支撑工程正向设计与标准完善。\n3 研究内容与关键技术\n实验测量与数据集：构建微波暗室/GNSS暗箱测试环境，获取链路指标与不同干扰条件下的“干扰-响应”数据集。\n模型抽象与接口校正：将实测数据拟合为接口函数/节点库，使仿真节点行为与实测对齐，并具备一定外推能力。\nEMC仿真模块集成：基于行业标准，集成骚扰测量仿真（辐射杂散、辐射骚扰、传导骚扰）与抗扰度试验仿真（辐射抗扰度、BCI、ESD等），嵌入限值与性能判据。\n智能用例生成与闭环验证：建立干扰特征库，结合遗传算法（GA）与生成对抗网络（GAN）生成最恶劣/罕见干扰场景；在仿真平台中动态注入干扰并与实测对标，输出用例库与防护建议。\n图1 关键技术说明图（两页纸附图）\n4 技术路线与实施计划\n阶段1（0-3个月）：搭建实验室环境与测试链路；完成典型干扰源配置与基准数据采集。",
+        "参考文献\\技术报告\\一汽项目试验室仿真技术简版资料\\最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx": "试验室环境下低轨卫星通信系统EMC仿真技术\n摘要\n随着低轨卫星通信系统的快速发展，其通信抗干扰性能及电磁兼容性（EMC）测试评估成为确保系统可靠性的关键环节。现有测试方法难以复现真实空间环境中多种干扰源耦合作用的综合效应，导致实验室测试结果与实际在轨性能存在较大偏差。因此，本研究旨在系统分析低轨卫星通信系统在典型应用场景下面临的复合电磁干扰特性，构建更加贴近实际的干扰模型，并在此基础上开发一套涵盖从单星基础参数到多星动态组网的全方位通信测试与评估方法。结合遗传算法和生成对抗网络等人工智能算法，生成一套典型的干扰用例生成方法，并探索干扰防护方案。同时，研究了各类主流专利技术与现行通信行业标准，本研究将涵盖整体EMC仿真技术，包括骚扰测量（如辐射杂散、传导骚扰）和抗扰度试验（如电磁辐射抗扰度、大电流注入）的仿真模拟，以全面提升低轨卫星系统在复杂电磁环境下的兼容性。通过此项研究，可为提升低轨卫星在复杂电磁环境下的通信可靠性提供关键技术支撑，并推动行业测试标准的完善。\n1 国内外研究现状\n1.1概述\n低轨卫星通信与测试的研究和标准的发展源头较早，可追溯至20世纪90年代的铱星系统，以国际电信联盟（ITU）的电磁兼容性标准和美国联邦通信委员会（FCC）的卫星设备环境测试为代表的基础标准，为高可靠性星载通信设备确立了早期的测试范式\n[1]\n。在此坚实的技术基础上，以Starlink、OneWeb为代表的全球低轨卫星星座计划正在加速部署，预计未来十年内将有数万颗低轨卫星被送入轨道随着低轨卫星的商业化普及，通信协议与频谱资源也呈现出开放化和多样化的趋势，如ITU组织所设立的一系列标准和协议已被适配用于卫星通信\n[2]\n；广泛普及的3GPP组织定义的LTE与5G蜂窝网络技术等\n[3]\n，为低轨卫星的超视距可靠通信与广域组网提供强大的基础设施支持。这些技术共同构成了当代低轨卫星通信多元化的发展图景。\n在此国际技术背景驱动下，中国的低轨卫星通信系统及抗干扰测试技术的研究也日趋完善，这些技术的发展最终体现在行业标准体系的逐步建立：从YD/T 3908-2021《\n卫星移动通信终端通用技术要求和测试方法\n》（适配于卫星终端测试）\n[4]\n，到YD/T 1312.21-2024《\n无线通信设备电磁兼容性要求和测量方法 第21部分：S波段卫星通信终端及其辅助设备"
+      }
+    },
+    {
+      "label": "无人机研究_测试评估方法与实验室建设资料",
+      "src": "D:\\无人机通信系统抗干扰性能的测试评估技术研究",
+      "dest": "D:\\正向设计规范\\参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究",
+      "task_type": "参考",
+      "summary": "该节点汇总无人机测试评估技术研究目录中的测试标准、干扰源标定、实验室建设和论文级方法报告，是正向设计规范线吸收无人机测试评估思路的入口。",
+      "writing_value": "可用于借鉴测试评估逻辑、实验室建设框架和参数标定口径。",
+      "source_entries": [
+        "1222论文",
+        "干扰源数据标定",
+        "实验室建设",
+        "无人机通信劣化-论文大纲_公式渲染版.docx",
+        "无人机通信劣化-论文大纲_公式渲染版.pdf",
+        "无人机通信劣化-论文级报告.docx",
+        "无人机通信劣化-论文级报告.pdf"
+      ],
+      "file_count": 34,
+      "top_files": [
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文大纲_公式渲染版.docx",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文大纲_公式渲染版.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文级报告.docx",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文级报告.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\1222论文\\20230131-____________-CN-DWP0013_Issue_1-01_Testing_the_risk_of_jamming_to_safety-critical_systems.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\实验室建设\\2建设方案(1).docx",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\1222论文\\en_30148901v020203p.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\1222论文\\Energy_Minimization_for_Wireless_Communication_With_Rotary-Wing_UAV.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\干扰源数据标定\\evidence_screenshots_pack (1).pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\干扰源数据标定\\evidence_screenshots_pack_v3.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\干扰源数据标定\\evidence_screenshots_pack_v4.pdf",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\干扰源数据标定\\evidence_screenshots_pack_v5.pdf"
+      ],
+      "previews": {
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文大纲_公式渲染版.docx": "无人机通信劣化场景优化：模型、公式与数据标定（论文大纲版）\n（去除代码段与截图；所有公式以 LaTeX 渲染形式插入）\n摘要：本文面向“无人机通信劣化场景优化”任务，给出论文级大纲与关键模型/公式/数据标定流程。重点覆盖：城市场景生成、A2G/U2U/无人机-干扰源路径损耗与遮挡判定、干扰源类型化标定与生成、飞行速度-能耗模型、通信劣化指标与遗传算法求解框架。所有参数取值与依据均来自用户提供文档与可公开检索的标准/论文，引用以 [n] 标注，文末给出参考文献列表。\n1 引言与问题定义\n目标：在城市多源干扰环境下，联合优化无人机飞行状态与受控干扰配置，使通信链路指标（如接收功率、SINR、速率、可靠性）出现可度量的“劣化”，并可解释其物理成因。模型需要同时支持 A2G、U2U 与 UAV-干扰源链路，并考虑建筑遮挡与室内/穿透损耗。[1–7][18–21]\n2 城市生成模型：方法、公式与可标定参数\n2.1 仿真区域与基础密度参数\n城市仿真区域通常采用矩形或多边形地块；以矩形为例，面积为式(1)。建筑、道路、干扰源“候选点”的数量通常由密度参数与面积共同决定（泊松或均匀采样）。[23][9]\n(1) 城市仿真区域面积（矩形）\n(2) 建筑物数量的泊松采样（示例）\n2.2 建筑物几何采样与高度分布\n建筑物几何参数可分为：平面投影（中心点/长宽/朝向）与高度。若缺少真实 GIS 数据，可采用“分布-参数化”方法：宽度/高度分别从经验分布采样（式(3)），并通过场景约束（道路缓冲、建筑间距等）保证可行性。[23][24]\n(3) 建筑物宽度/高度的分布采样（由标定分布给定）\n2.3 背景点过程与三维扩展\n当需要刻画城市中大规模随机设施（如 Wi‑Fi AP、室内热点、屋顶设备）时，可用泊松点过程（PPP）建模二维平面分布，并用独立的高度分布扩展为 3D（式(4)–(5)）。该思想在密集城市场景的随机几何建模中常见。[23][24]\n(4) 2D 泊松点过程与点数\n(5) 3D 高度分布的分离建模\n3 路径损耗、遮挡判定与概率后备模型",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文大纲_公式渲染版.pdf": "当前环境未安装 pypdf，未提取 PDF 文本预览。",
+        "参考文献\\测试评估与实验室建设\\无人机通信抗干扰测试评估技术研究\\无人机通信劣化-论文级报告.docx": "无人机通信性能劣化场景优化模型与高级遗传算法实现\n——方法、公式、数据标定与代码对照（论文级技术报告）\n作者：cra（用户提供代码与数据）\n生成时间：2026-01-02\n摘要\n本报告面向“无人机通信性能劣化场景优化”代码实现（文件：UAV_GA.py）与用户提供的标定材料，系统梳理城市生成模型、A2G/U2U/无人机-干扰源传播与遮挡判定、干扰源标定与随机生成、无人机速度与能耗模型、总体通信劣化指标与创新点，以及遗传算法（geatpy）最终实现形式。报告严格遵循“不得编造”的要求：所有公式、参数与数据均来自（1）用户提供代码与附件、（2）后续公开文献检索（引用到参考文献）。对无法从可用来源中核验的数值，本文明确标注为“待标定/待补齐”。\n关键词：无人机通信；A2G/U2U；城市随机几何；LoS概率；路径损耗；室内传播；建筑进入损耗；干扰源标定；遗传算法；通信劣化指标\n第一章 城市生成模型：方法、公式与代码对应\n1.1 模型目标与输入参数\n城市生成模块位于 ScenarioGenerator 类中（见代码[1]）。其目标是在给定仿真区域（正方形，边长 area_size 米）内，生成建筑物集合、语义层（road/sidewalk/roof/indoor 等）以及用于遮挡判定的空间索引。主要输入参数包括：area_size、building_density（期望覆盖率）、building_height_range、environment_type（dense_urban/urban/suburban/rural）、以及语义层宽度参数等。\n1.2 基于 α–β–γ 的城市形态参数化\n代码采用 Al‑Hourani 等在 A2G 模型中使用的城市形态参数（α, β, γ）来描述不同场景（dense_urban/urban/suburban/rural）的统计特征。其中：α 为建筑覆盖率（built-up area ratio），β 为建筑密度（buildings/km²），γ 为建筑高度 Rayleigh 分布的尺度参数。相关环境参数表在代码常量 AL_HOURANI_ENV_PARAMS 中给出（见 Listing 1）。该参数化与文献中用于 A2G LoS 统计建模的设定一致。[2]\n1.3 建筑宽度 W 与街道宽度 S 的推导\n根据 α 与 β，可推导平均建筑宽度 W 与平均街道宽度 S（代码注释标明“from ITU / Al‑Hourani parameterization”）。代码采用如下关系：\nW = 1000 * sqrt(α / β)   （单位：m）\n(1)\nS = 1000 / sqrt(β) − W    （单位：m）\n(2)"
+      }
+    }
+  ]
+}

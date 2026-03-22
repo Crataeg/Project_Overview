@@ -4,6 +4,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import textwrap
 import zipfile
 from dataclasses import asdict, dataclass
@@ -18,8 +19,8 @@ except Exception:
     PdfReader = None
 
 
-ROOT = Path(r"D:\工程总览")
-TOTAL_VAULT = ROOT / "总的obsidian知识库"
+ROOT = Path("D:/")
+TOTAL_VAULT = Path(r"D:\工程总览\总的obsidian知识库")
 
 TEXT_EXTS = {
     ".c",
@@ -49,6 +50,7 @@ class CopyTask:
     task_type: str
     summary: str
     writing_value: str
+    entries: Sequence[str] = ()
     ignore_globs: Sequence[str] = ()
 
 
@@ -69,6 +71,7 @@ class TaskResult:
     task_type: str
     summary: str
     writing_value: str
+    source_entries: List[str]
     file_count: int
     top_files: List[str]
     previews: Dict[str, str]
@@ -89,9 +92,29 @@ def rel_link(from_path: Path, to_path: Path) -> str:
     return os.path.relpath(to_path, from_path.parent).replace("\\", "/")
 
 
+def force_remove(path: Path) -> None:
+    def _onexc(func, target, _excinfo):
+        try:
+            os.chmod(target, stat.S_IWRITE)
+        except Exception:
+            pass
+        func(target)
+
+    if not path.exists():
+        return
+    if path.is_dir():
+        shutil.rmtree(path, onexc=_onexc)
+    else:
+        try:
+            os.chmod(path, stat.S_IWRITE)
+        except Exception:
+            pass
+        path.unlink()
+
+
 def ensure_clean_dir(path: Path) -> None:
     if path.exists():
-        shutil.rmtree(path, ignore_errors=True)
+        force_remove(path)
     path.mkdir(parents=True, exist_ok=True)
 
 
@@ -201,18 +224,31 @@ def copy_task(project_root: Path, task: CopyTask) -> TaskResult:
     src = Path(task.src)
     dest = project_root / task.dest_rel
     dest.parent.mkdir(parents=True, exist_ok=True)
+    ignore = make_ignore(task.ignore_globs)
 
-    if src.is_dir():
+    if task.entries:
         ensure_clean_dir(dest)
-        ignore = make_ignore(task.ignore_globs)
+        for name in task.entries:
+            item = src / name
+            if not item.exists():
+                continue
+            target = dest / name
+            if item.is_dir():
+                shutil.copytree(item, target, dirs_exist_ok=True, ignore=ignore)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(item, target)
+        file_base = dest
+    elif src.is_dir():
+        ensure_clean_dir(dest)
         shutil.copytree(src, dest, dirs_exist_ok=True, ignore=ignore)
         file_base = dest
     else:
         if dest.exists():
             if dest.is_dir():
-                shutil.rmtree(dest, ignore_errors=True)
+                force_remove(dest)
             else:
-                dest.unlink()
+                force_remove(dest)
         shutil.copy2(src, dest)
         file_base = dest
 
@@ -231,6 +267,7 @@ def copy_task(project_root: Path, task: CopyTask) -> TaskResult:
         task_type=task.task_type,
         summary=task.summary,
         writing_value=task.writing_value,
+        source_entries=list(task.entries),
         file_count=len(copied_files),
         top_files=[str(path.relative_to(project_root)) for path in top_files],
         previews=previews,
@@ -278,17 +315,31 @@ def build_task_note(vault: Path, project_root: Path, task: TaskResult) -> None:
         "",
         f"- `{task.src}`",
         "",
-        "## 复制后位置",
-        "",
-        f"- `{task.dest}`",
-        "",
-        f"## 文件规模",
-        "",
-        f"- 文件数：`{task.file_count}`",
-        "",
-        "## 关键文件",
-        "",
     ]
+    if task.source_entries:
+        lines.extend(
+            [
+                "## 来源条目",
+                "",
+            ]
+        )
+        for name in task.source_entries:
+            lines.append(f"- `{name}`")
+        lines.extend([""])
+    lines.extend(
+        [
+            "## 复制后位置",
+            "",
+            f"- `{task.dest}`",
+            "",
+            f"## 文件规模",
+            "",
+            f"- 文件数：`{task.file_count}`",
+            "",
+            "## 关键文件",
+            "",
+        ]
+    )
     for file_rel in task.top_files:
         lines.append(f"- `{file_rel}`")
     if task.previews:
@@ -389,7 +440,12 @@ def build_total_vault(projects: Sequence[ProjectSpec]) -> None:
     ensure_clean_dir(TOTAL_VAULT)
     write_obsidian_config(TOTAL_VAULT)
 
+    def task_note(project_name: str, task_type: str, label: str) -> Path:
+        folder = "10_成果节点" if task_type == "成果" else "20_参考节点"
+        return ROOT / project_name / "obsidian知识库" / folder / f"{sanitize_name(label)}.md"
+
     overview = TOTAL_VAULT / "00_工程总览.md"
+    fusion_nav = TOTAL_VAULT / "20_交叉图谱" / "新增资产融合导航.md"
     lines = [
         "# 工程总览",
         "",
@@ -411,9 +467,51 @@ def build_total_vault(projects: Sequence[ProjectSpec]) -> None:
             "- `论文无人机` 独立成线，但在“通信性能评估、最坏工况搜索、链路指标建模”上可与卫星线形成方法参考关系。",
             "- 总仓库建议作为跨项目导航与主题沉淀入口，各项目子仓库负责本项目内部的详细拆解。",
             "",
+            "## 新增资产融合",
+            "",
+            f"- [新增资产融合导航]({rel_link(overview, fusion_nav)})：汇总 `D:\\无人机通信系统抗干扰性能的测试评估技术研究` 与 `D:\\一汽项目` 的分类落位。",
+            "",
         ]
     )
     write_text(overview, "\n".join(lines))
+
+    fusion_lines = [
+        "# 新增资产融合导航",
+        "",
+        "## 总体说明",
+        "",
+        "- 本次把 `D:\\无人机通信系统抗干扰性能的测试评估技术研究` 和 `D:\\一汽项目` 的资产按“成果 / 参考 / 写作 / 代码底座 / 标定建设 / 专利素材”重新分类并复制到五个项目库中。",
+        "- 总库不重复镜像整套资产，而是通过这里的分类导航指向各子项目中的实际复制落位。",
+        "",
+        "## 无人机测试评估技术研究 -> 子项目",
+        "",
+        f"- 论文无人机 / 代码与设计：[{sanitize_name('无人机研究_代码工程与设计文档')}]({rel_link(fusion_nav, task_note('论文无人机', '成果', '无人机研究_代码工程与设计文档'))})",
+        f"- 论文无人机 / 论文报告与汇报：[{sanitize_name('无人机研究_论文报告与汇报材料')}]({rel_link(fusion_nav, task_note('论文无人机', '成果', '无人机研究_论文报告与汇报材料'))})",
+        f"- 论文无人机 / 专题论文与参考：[{sanitize_name('无人机研究_专题论文与参考资料')}]({rel_link(fusion_nav, task_note('论文无人机', '参考', '无人机研究_专题论文与参考资料'))})",
+        f"- 论文无人机 / 标定与实验建设：[{sanitize_name('无人机研究_测试标定与实验建设资料')}]({rel_link(fusion_nav, task_note('论文无人机', '参考', '无人机研究_测试标定与实验建设资料'))})",
+        f"- 正向设计规范 / 测试评估方法迁移：[{sanitize_name('无人机研究_测试评估方法与实验室建设资料')}]({rel_link(fusion_nav, task_note('正向设计规范', '参考', '无人机研究_测试评估方法与实验室建设资料'))})",
+        "",
+        "## 一汽项目 -> 子项目",
+        "",
+        f"- 论文卫星 / 主工程：[{sanitize_name('MATLAB卫星仿真工程')}]({rel_link(fusion_nav, task_note('论文卫星', '成果', 'MATLAB卫星仿真工程'))})",
+        f"- 论文卫星 / 原型工程与 Simulink：[{sanitize_name('卫星EMC原型工程与Simulink模型')}]({rel_link(fusion_nav, task_note('论文卫星', '成果', '卫星EMC原型工程与Simulink模型'))})",
+        f"- 论文卫星 / 干扰识别数据与训练模型：[{sanitize_name('卫星干扰识别数据与训练模型')}]({rel_link(fusion_nav, task_note('论文卫星', '成果', '卫星干扰识别数据与训练模型'))})",
+        f"- 论文卫星 / 研究方案与补充报告：[{sanitize_name('一汽项目_技术报告与简版方案')}]({rel_link(fusion_nav, task_note('论文卫星', '参考', '一汽项目_技术报告与简版方案'))})",
+        f"- 专利自有 / 工程与数据底座：[{sanitize_name('一汽项目_卫星EMC原型工程与数据集')}]({rel_link(fusion_nav, task_note('专利自有', '成果', '一汽项目_卫星EMC原型工程与数据集'))})",
+        f"- 专利自有 / 专利对标：[{sanitize_name('主机厂专利与EMC对标资料')}]({rel_link(fusion_nav, task_note('专利自有', '参考', '主机厂专利与EMC对标资料'))})",
+        f"- 专利一汽 / 专利图示与模板：[{sanitize_name('一汽项目_专利图示素材与模板')}]({rel_link(fusion_nav, task_note('专利一汽', '成果', '一汽项目_专利图示素材与模板'))})",
+        f"- 专利一汽 / 试验室仿真支撑简版：[{sanitize_name('一汽项目_试验室仿真支撑简版资料')}]({rel_link(fusion_nav, task_note('专利一汽', '成果', '一汽项目_试验室仿真支撑简版资料'))})",
+        f"- 专利一汽 / 专利与标准参考：[{sanitize_name('一汽项目_专利与标准参考合集')}]({rel_link(fusion_nav, task_note('专利一汽', '参考', '一汽项目_专利与标准参考合集'))})",
+        f"- 正向设计规范 / 研究方案根目录定稿：[{sanitize_name('一汽项目_根目录方案简版与定稿')}]({rel_link(fusion_nav, task_note('正向设计规范', '成果', '一汽项目_根目录方案简版与定稿'))})",
+        f"- 正向设计规范 / 项目总结与学位论文：[{sanitize_name('一汽项目_项目总结与学位论文材料')}]({rel_link(fusion_nav, task_note('正向设计规范', '参考', '一汽项目_项目总结与学位论文材料'))})",
+        f"- 正向设计规范 / 标准与对标合集：[{sanitize_name('一汽项目_标准与对标参考合集')}]({rel_link(fusion_nav, task_note('正向设计规范', '参考', '一汽项目_标准与对标参考合集'))})",
+        "",
+        "## 使用建议",
+        "",
+        "- 先从总库导航进入分类节点，再从节点跳转到实际复制目录查看资产本体。",
+        "- 论文写作优先看 `论文无人机 / 论文卫星`，规范与方案优先看 `正向设计规范`，专利材料优先看 `专利一汽 / 专利自有`。",
+    ]
+    write_text(fusion_nav, "\n".join(fusion_lines))
 
     satellite_cross = TOTAL_VAULT / "20_交叉图谱" / "卫星仿真与专利主线.md"
     lines = [
@@ -464,8 +562,9 @@ PROJECTS: Sequence[ProjectSpec] = [
         description="放置 MATLAB 卫星仿真专利项目，重点保留仿真工程、技术报告、专利对标与支撑文献。",
         writing_summary=(
             "这一条线的写作基础由三部分组成：第一，`LEO_Sim` 与 `satellite.m` 给出可落地的 MATLAB 仿真底座；"
-            "第二，试验室环境下低轨卫星通信系统 EMC 仿真技术相关报告把工程问题和方法路线固定下来；"
-            "第三，专利与车载卫星通信资料提供现有方案对标。后续写作时可以直接围绕“仿真场景、链路建模、EMC 指标、最坏工况、专利差异化设计点”展开。"
+            "第二，`LEO_EMC_Sim`、数据集与训练模型补齐了原型级 Simulink 链路和干扰识别训练材料；"
+            "第三，试验室环境下低轨卫星通信系统 EMC 仿真技术相关报告把工程问题和方法路线固定下来；"
+            "第四，专利与车载卫星通信资料提供现有方案对标。后续写作时可以直接围绕“仿真场景、链路建模、EMC 指标、最坏工况、专利差异化设计点”展开。"
         ),
         cross_summary="它与 `论文卫星` 共享 MATLAB 仿真底座，与 `专利一汽` 共享卫星通信专利表达方式，与 `正向设计规范` 共享标准和研究方案。",
         tasks=[
@@ -492,6 +591,25 @@ PROJECTS: Sequence[ProjectSpec] = [
                 task_type="成果",
                 summary="该目录包含专利自有线所需的技术报告、标准和论文支撑，是把仿真工程转成专利方案的重要报告层材料。",
                 writing_value="有助于提炼“为何这样建模、为何这样定义测试链路、为何这样设计指标”的论证语言。",
+            ),
+            CopyTask(
+                label="一汽项目_卫星EMC原型工程与数据集",
+                src=r"D:\一汽项目",
+                dest_rel=r"成果本身\代码工程\一汽项目_卫星EMC原型工程与数据集",
+                task_type="成果",
+                summary="该节点汇总一汽项目中的 Simulink 原型工程、根目录系统模型、STFT 数据集和训练模型，是专利自有线继承更早期工程实现的重要补充。",
+                writing_value="可支撑专利中对原型验证链、识别模块、数据集构建与训练依据的补充说明。",
+                entries=(
+                    "LEO_EMC_Sim",
+                    "dataset_stft_r2021a",
+                    "GAN_Jammer_R2021a.mat",
+                    "lenet_stft_model_r2021a.mat",
+                    "build_LEO_EMC_Sim.m",
+                    "LEO_EMC_System.slx",
+                    "LEO_EMC_System.slx.autosave",
+                    "LEO_EMC_System.slxc",
+                    "slprj",
+                ),
             ),
             CopyTask(
                 label="卫星通信专利对标",
@@ -522,7 +640,7 @@ PROJECTS: Sequence[ProjectSpec] = [
         tasks=[
             CopyTask(
                 label="一汽专利文本与附图",
-                src=r"D:\专利一汽",
+                src=r"D:\工程总览\tmp_leo_emcsim_lab_remote",
                 dest_rel=r"成果本身\专利文本与附图\专利一汽",
                 task_type="成果",
                 summary="该目录包含一汽专利项目的交底书、附图清单、SVG/PNG 附图和压缩包，是当前最直接的专利成果载体。",
@@ -535,6 +653,40 @@ PROJECTS: Sequence[ProjectSpec] = [
                 task_type="成果",
                 summary="该目录提供专利一汽线的技术报告、标准和论文支撑，是从仿真思路过渡到专利论证的报告层材料。",
                 writing_value="可用于解释交底书中的测试环境、场强换算、判定逻辑和输出页面设计依据。",
+            ),
+            CopyTask(
+                label="一汽项目_试验室仿真支撑简版资料",
+                src=r"D:\一汽项目",
+                dest_rel=r"成果本身\支撑报告\一汽项目补充试验室仿真材料",
+                task_type="成果",
+                summary="该节点收集一汽项目根目录中的试验室仿真技术定稿、一页纸与两页纸版本，便于专利线在交付口径、简版汇报和专利支撑材料之间切换。",
+                writing_value="适合在专利申报、项目汇报和对外说明时快速抽取不同粒度的技术表述。",
+                entries=(
+                    "试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+                    "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+                    "（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "lab_emc_sim_one_page.docx",
+                    "lab_emc_sim_two_page.docx",
+                    "最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                ),
+            ),
+            CopyTask(
+                label="一汽项目_专利图示素材与模板",
+                src=r"D:\一汽项目",
+                dest_rel=r"成果本身\专利文本与附图\一汽项目补充素材",
+                task_type="成果",
+                summary="该节点保留一汽项目根目录中的图片、模板和临时文档，可作为专利附图、版式与补充素材归档位。",
+                writing_value="有利于后续整理附图、版式样例、专利说明书封面或汇报图示素材。",
+                entries=(
+                    "69bb216e-37c8-4c63-a17d-92b18d2c789d.png",
+                    "6bd2a610-225a-470a-ba27-3a1f3e3b86ad.jpg",
+                    "微信图片_20260122141540_92_31.png",
+                    "模板.docx",
+                    "新建 DOCX 文档.docx",
+                ),
             ),
             CopyTask(
                 label="卫星通信专利对标",
@@ -552,6 +704,15 @@ PROJECTS: Sequence[ProjectSpec] = [
                 summary="该目录提供多家主机厂相关专利与 EMC 材料，是专利布局对照的重要参考。",
                 writing_value="可用于专利检索、对标与撰写中的现有技术比较。",
             ),
+            CopyTask(
+                label="一汽项目_专利与标准参考合集",
+                src=r"D:\一汽项目",
+                dest_rel=r"参考文献\专利对标\一汽项目专利与标准合集",
+                task_type="参考",
+                summary="该节点汇总一汽项目根目录中的标准、专利与车载卫星通信单篇资料，可作为专利一汽线的补充参考合集。",
+                writing_value="适合用于补齐背景技术、标准依据与典型专利边界说明。",
+                entries=("参考文献", "车载卫星通信系统"),
+            ),
         ],
     ),
     ProjectSpec(
@@ -559,7 +720,8 @@ PROJECTS: Sequence[ProjectSpec] = [
         description="放置 MATLAB 卫星仿真论文项目，重点保留仿真工程、论文报告、文献与标准。",
         writing_summary=(
             "这一条线的论文写作基础最完整：MATLAB 仿真工程负责方法与结果，`LEO_Sim` 内报告负责工程解释，"
-            "正向设计模板、研究方案论文和试验室仿真技术论文负责理论支撑与文献综述。后续论文可按“研究背景、系统模型、仿真方法、结果分析、EMC 讨论”展开。"
+            "`LEO_EMC_Sim`、STFT 数据集与训练模型补充了原型级验证和识别支链，正向设计模板、研究方案论文和试验室仿真技术论文负责理论支撑与文献综述。"
+            "后续论文可按“研究背景、系统模型、仿真方法、结果分析、EMC 讨论”展开。"
         ),
         cross_summary="它是卫星相关几条线的论文表达主线，与 `专利自有` 共用工程底座，与 `专利一汽` 共用专利表达目标，与 `正向设计规范` 共用标准与方案依据。",
         tasks=[
@@ -588,6 +750,31 @@ PROJECTS: Sequence[ProjectSpec] = [
                 writing_value="有助于把工程仿真语言转成论文语体，并为实验设计与结果解读提供上下文。",
             ),
             CopyTask(
+                label="卫星EMC原型工程与Simulink模型",
+                src=r"D:\一汽项目",
+                dest_rel=r"成果本身\代码工程\LEO_EMC_Sim_原型与Simulink",
+                task_type="成果",
+                summary="该节点保留一汽项目中的 Simulink 原型工程、根目录系统模型和构建缓存，是论文卫星线分析平台演进过程的重要工程补充。",
+                writing_value="适合在论文中说明平台从原型到工程化版本的演进路线与验证链。",
+                entries=(
+                    "LEO_EMC_Sim",
+                    "build_LEO_EMC_Sim.m",
+                    "LEO_EMC_System.slx",
+                    "LEO_EMC_System.slx.autosave",
+                    "LEO_EMC_System.slxc",
+                    "slprj",
+                ),
+            ),
+            CopyTask(
+                label="卫星干扰识别数据与训练模型",
+                src=r"D:\一汽项目",
+                dest_rel=r"成果本身\代码工程\干扰识别数据与训练模型",
+                task_type="成果",
+                summary="该节点汇总 STFT 数据集、GAN 干扰模型和 LeNet 训练模型，是论文卫星线干扰识别支链的直接数据底座。",
+                writing_value="可支撑论文中的数据集构建、训练流程、识别实验与模型复现实验说明。",
+                entries=("dataset_stft_r2021a", "GAN_Jammer_R2021a.mat", "lenet_stft_model_r2021a.mat"),
+            ),
+            CopyTask(
                 label="卫星论文与模板文献",
                 src=r"D:\一汽项目\EMC正向设计写作模板参考",
                 dest_rel=r"参考文献\论文文献\EMC正向设计写作模板参考",
@@ -603,6 +790,37 @@ PROJECTS: Sequence[ProjectSpec] = [
                 summary="该目录包含研究方案正文、标准、对照文件和专题论文，是论文卫星线的项目背景与规范依据。",
                 writing_value="可直接支撑研究背景、工程需求、评价指标与标准约束部分。",
             ),
+            CopyTask(
+                label="一汽项目_技术报告与简版方案",
+                src=r"D:\一汽项目",
+                dest_rel=r"参考文献\技术报告\一汽项目技术报告与简版方案",
+                task_type="参考",
+                summary="该节点收纳一汽项目根目录中的项目总结、学位论文和试验室仿真简版材料，可作为论文卫星线的补充技术报告库。",
+                writing_value="适合提炼项目背景、研究现状、工程意义和简版汇报中的成熟表述。",
+                entries=(
+                    "00 技术开发项目总结报告.docx",
+                    "技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx",
+                    "16111047-宋亚丽-博士学位论文终稿.doc",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+                    "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+                    "（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "lab_emc_sim_one_page.docx",
+                    "lab_emc_sim_two_page.docx",
+                    "最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                ),
+            ),
+            CopyTask(
+                label="一汽项目_参考文献与标准合集",
+                src=r"D:\一汽项目",
+                dest_rel=r"参考文献\研究方案与标准\一汽项目参考文献合集",
+                task_type="参考",
+                summary="该节点汇总一汽项目根目录中的专利、标准和卫星通信参考资料，可作为论文卫星线的补充背景文献库。",
+                writing_value="适合用于补充标准引用、专利背景和相关工作对照。",
+                entries=("参考文献",),
+            ),
         ],
     ),
     ProjectSpec(
@@ -610,7 +828,8 @@ PROJECTS: Sequence[ProjectSpec] = [
         description="放置无人机 Python 仿真论文项目，重点保留代码工程、论文草稿与参考文献。",
         writing_summary=(
             "这一条线已经形成较完整的论文基础：`12` 目录中有 GA+GAN 场景生成、KPI/BLER 评估、实测对照输出，`论文` 目录中有论文初稿，"
-            "`key reference` 中有综述、链路分析、评估方法、仿真证据链。后续论文可围绕“场景建模、最差场景搜索、指标定义、测量对照验证”组织正文。"
+            "`key reference` 中有综述、链路分析、评估方法、仿真证据链；新增导入的“无人机通信系统抗干扰性能的测试评估技术研究”目录进一步补齐了 0315 工程、论文级报告、干扰源标定、实验室建设和组会材料。"
+            "后续论文可围绕“场景建模、最差场景搜索、指标定义、测量对照验证”组织正文。"
         ),
         cross_summary="它在研究对象上独立，但在通信性能评估、最坏工况搜索与指标构造上，可以为卫星线提供方法参考。",
         tasks=[
@@ -649,6 +868,55 @@ PROJECTS: Sequence[ProjectSpec] = [
                 summary="该目录系统整理了无人机通信、轨迹优化、链路评估、仿真证据链等文献，是论文无人机线的核心参考库。",
                 writing_value="可直接为引言、相关工作、方法依据和实验对照提供文献支撑。",
             ),
+            CopyTask(
+                label="无人机研究_代码工程与设计文档",
+                src=r"D:\无人机通信系统抗干扰性能的测试评估技术研究",
+                dest_rel=r"成果本身\代码工程\无人机通信测试评估技术研究_代码与设计",
+                task_type="成果",
+                summary="该节点汇总无人机测试评估技术研究目录中的 0315 论文级工程、早期模块工程以及代码设计说明文档，是论文无人机线的重要补充成果。",
+                writing_value="可直接支撑论文方法、代码实现、参数设计与城市模型生成逻辑说明。",
+                entries=("0315", "UAV_Communication_GA", "代码", "代码.docx", "城市模型生成.docx", "数据标定.docx", "最终代码.docx"),
+                ignore_globs=("*.pyc",),
+            ),
+            CopyTask(
+                label="无人机研究_论文报告与汇报材料",
+                src=r"D:\无人机通信系统抗干扰性能的测试评估技术研究",
+                dest_rel=r"成果本身\论文草稿\无人机通信测试评估技术研究_报告与汇报",
+                task_type="成果",
+                summary="该节点收纳无人机测试评估技术研究目录中的论文级报告、大纲、组会材料和中间文档，可作为论文写作与阶段汇报的连续证据链。",
+                writing_value="有利于快速复用已经形成的长报告、短报告和汇报 PPT 内容，保持写作和汇报口径一致。",
+                entries=(
+                    "组会",
+                    "1223",
+                    "1224",
+                    "小论文前期.pptx",
+                    "无人机通信劣化-论文大纲_公式渲染版.docx",
+                    "无人机通信劣化-论文大纲_公式渲染版.pdf",
+                    "无人机通信劣化-论文级报告.docx",
+                    "无人机通信劣化-论文级报告.pdf",
+                    "无人机通信劣化_极简报告.pptx",
+                ),
+                ignore_globs=("~$*",),
+            ),
+            CopyTask(
+                label="无人机研究_专题论文与参考资料",
+                src=r"D:\无人机通信系统抗干扰性能的测试评估技术研究",
+                dest_rel=r"参考文献\论文文献\无人机通信测试评估技术研究_专题论文与参考资料",
+                task_type="参考",
+                summary="该节点汇总无人机测试评估技术研究目录中的专题论文、标准、压缩包与改进方向资料，是论文无人机线新增的专题参考资料库。",
+                writing_value="可直接用于补充综述、路径损耗建模、干扰机理、测试标准和改进方向论证。",
+                entries=("论文", "1220论文", "1222论文", "改进"),
+            ),
+            CopyTask(
+                label="无人机研究_测试标定与实验建设资料",
+                src=r"D:\无人机通信系统抗干扰性能的测试评估技术研究",
+                dest_rel=r"参考文献\研究方案与标定\无人机通信测试评估技术研究_测试标定与实验建设",
+                task_type="参考",
+                summary="该节点保留无人机测试评估技术研究目录中的干扰源标定和实验室建设资料，可作为论文无人机线的测试依据与实验条件说明来源。",
+                writing_value="适合用于说明参数标定依据、实验环境构建和测试评估技术路线。",
+                entries=("干扰源数据标定", "实验室建设"),
+                ignore_globs=("~$*",),
+            ),
         ],
     ),
     ProjectSpec(
@@ -656,7 +924,8 @@ PROJECTS: Sequence[ProjectSpec] = [
         description="放置正向设计规范项目，重点保留研究方案、标准规范、模板案例与总结报告。",
         writing_summary=(
             "这一条线主要承担规范化与工程化表达。研究方案目录提供总体设计方案、标准、对照文件和研究报告，模板参考目录提供可借鉴的 EMC 正向设计案例，"
-            "总结报告则补充项目层面的论证背景。后续无论写规范、研究方案还是论文背景，都可以直接从这里提取结构化语言。"
+            "总结报告则补充项目层面的论证背景；本次新增的一汽根目录方案定稿和无人机测试评估资料，又补齐了简版方案、项目总结、实验室建设和测试标定素材。"
+            "后续无论写规范、研究方案还是论文背景，都可以直接从这里提取结构化语言。"
         ),
         cross_summary="它是卫星相关三条线的规范约束与写作支点，为 `专利自有`、`专利一汽`、`论文卫星` 提供统一的标准和方案语言。",
         tasks=[
@@ -683,6 +952,78 @@ PROJECTS: Sequence[ProjectSpec] = [
                 task_type="参考",
                 summary="该报告从项目层面总结电动智能网联汽车电磁兼容仿真验证技术研究，是正向设计规范线的背景与论证材料。",
                 writing_value="可为项目意义、工程背景和综合结论部分提供成熟表述。",
+            ),
+            CopyTask(
+                label="一汽项目_根目录方案简版与定稿",
+                src=r"D:\一汽项目",
+                dest_rel=r"成果本身\规范方案\一汽项目_根目录方案简版与定稿",
+                task_type="成果",
+                summary="该节点汇总一汽项目根目录中的方案定稿、一页纸与两页纸版本，是正向设计规范线补齐不同交付粒度的重要成果位。",
+                writing_value="适合在规范、方案、汇报摘要与对外沟通版本之间快速切换内容粒度。",
+                entries=(
+                    "车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+                    "车载低轨卫星通信系统EMC性能正向设计技术研究方案（两页纸简化版）.docx",
+                    "车载低轨卫星通信系统EMC性能正向设计研究方案（一页纸简化版）.docx",
+                    "（两页纸简化版）车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+                    "（一页纸简化版）车载低轨卫星通信系统EMC性能正向设计研究方案.docx",
+                    "（一页纸简化版）车载低轨卫星通信系统EMC性能正向设计研究方案 - 副本.docx",
+                    "最终稿_格式对齐_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+                ),
+            ),
+            CopyTask(
+                label="一汽项目_项目总结与学位论文材料",
+                src=r"D:\一汽项目",
+                dest_rel=r"参考文献\技术报告\项目总结与学位论文材料",
+                task_type="参考",
+                summary="该节点收纳一汽项目中的项目总结报告与学位论文终稿，可作为正向设计规范线的背景论证和长文献参考材料。",
+                writing_value="适合提炼项目意义、研究现状和较完整的论证表达。",
+                entries=("00 技术开发项目总结报告.docx", "技术开发项目总结报告-电动智能网联汽车电磁兼容仿真验证技术研究.docx", "16111047-宋亚丽-博士学位论文终稿.doc"),
+            ),
+            CopyTask(
+                label="一汽项目_标准与对标参考合集",
+                src=r"D:\一汽项目",
+                dest_rel=r"参考文献\标准与对标\一汽项目参考文献合集",
+                task_type="参考",
+                summary="该节点汇总一汽项目根目录中的标准、车载卫星通信资料和参考文献目录，是正向设计规范线补充标准与对标依据的集合位。",
+                writing_value="可用于补充标准引用、术语定义、竞品参考和技术边界说明。",
+                entries=("参考文献", "车载卫星通信系统"),
+            ),
+            CopyTask(
+                label="一汽项目_试验室仿真技术简版资料",
+                src=r"D:\一汽项目",
+                dest_rel=r"参考文献\技术报告\一汽项目试验室仿真技术简版资料",
+                task_type="参考",
+                summary="该节点收纳一汽项目根目录中的试验室仿真技术一页纸、两页纸和格式整理稿，可作为规范线的补充简版说明材料。",
+                writing_value="适合在规范编制、阶段汇报和方案摘要中复用已有简版技术文字。",
+                entries=(
+                    "试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术（一页纸简化版）.docx",
+                    "试验室环境下低轨卫星通信系统EMC仿真技术（两页纸简化版）.docx",
+                    "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "（一页纸）试验室环境下低轨卫星通信系统EMC仿真技术(1).docx",
+                    "（两页纸）试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                    "lab_emc_sim_one_page.docx",
+                    "lab_emc_sim_two_page.docx",
+                    "最终稿_格式对齐_试验室环境下低轨卫星通信系统EMC仿真技术.docx",
+                ),
+            ),
+            CopyTask(
+                label="无人机研究_测试评估方法与实验室建设资料",
+                src=r"D:\无人机通信系统抗干扰性能的测试评估技术研究",
+                dest_rel=r"参考文献\测试评估与实验室建设\无人机通信抗干扰测试评估技术研究",
+                task_type="参考",
+                summary="该节点汇总无人机测试评估技术研究目录中的测试标准、干扰源标定、实验室建设和论文级方法报告，是正向设计规范线吸收无人机测试评估思路的入口。",
+                writing_value="可用于借鉴测试评估逻辑、实验室建设框架和参数标定口径。",
+                entries=(
+                    "1222论文",
+                    "干扰源数据标定",
+                    "实验室建设",
+                    "无人机通信劣化-论文大纲_公式渲染版.docx",
+                    "无人机通信劣化-论文大纲_公式渲染版.pdf",
+                    "无人机通信劣化-论文级报告.docx",
+                    "无人机通信劣化-论文级报告.pdf",
+                ),
+                ignore_globs=("~$*",),
             ),
         ],
     ),

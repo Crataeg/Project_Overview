@@ -1,0 +1,236 @@
+{
+  "main": {
+    "id": "6753d6de623628a9",
+    "type": "split",
+    "children": [
+      {
+        "id": "a6a7d18a91adc1db",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a79d8cee087a2195",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "obsidian_vault/20_知识卡片/论文无人机/相关研究/论文无人机_相关研究_002.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "论文无人机_相关研究_002"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "92f5812bfdbc4f03",
+    "type": "split",
+    "children": [
+      {
+        "id": "f240021028ad9759",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "feb43ebd44242c47",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "f20d41b506bfe28a",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "fcacfaa29a5d4217",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "d9d68e00a232a8d2",
+    "type": "split",
+    "children": [
+      {
+        "id": "3c6e6abae174d744",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "49da5f25869e82dd",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "obsidian_vault/20_知识卡片/论文无人机/相关研究/论文无人机_相关研究_002.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "论文无人机_相关研究_002 的反向链接列表"
+            }
+          },
+          {
+            "id": "20a646f06f63a492",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "obsidian_vault/20_知识卡片/论文无人机/相关研究/论文无人机_相关研究_002.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "论文无人机_相关研究_002 的出链列表"
+            }
+          },
+          {
+            "id": "7cff67bff4835f2e",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "dd151bdf9928c555",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "b9965537f69e45f0",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "obsidian_vault/20_知识卡片/论文无人机/相关研究/论文无人机_相关研究_002.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "论文无人机_相关研究_002 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "a79d8cee087a2195",
+  "lastOpenFiles": [
+    "产出文件夹/20260322_GitHub同步与Codex技能/project-overview/SKILL.md",
+    "产出文件夹/20260322_GitHub同步与Codex技能/README.md",
+    "产出文件夹/20260322_GitHub同步与Codex技能/project-overview",
+    "产出文件夹/20260322_GitHub同步与Codex技能",
+    "obsidian_vault/20_交叉图谱/20260322_多项目同步状态.md",
+    "obsidian_vault/20_交叉图谱",
+    "obsidian_vault/10_总索引/专利自有.md",
+    "obsidian_vault/10_总索引/专利一汽.md",
+    "obsidian_vault/05_成果图谱/节点/成果节点/正向设计规范_成果节点.md",
+    "obsidian_vault/05_成果图谱/节点/成果节点/专利自有_成果节点.md",
+    "obsidian_vault/05_成果图谱/节点/成果节点/专利一汽_成果节点.md",
+    "obsidian_vault/15_主题图谱/论文无人机/相关研究.md",
+    "obsidian_vault/05_成果图谱/节点/成果节点/论文无人机_成果节点.md",
+    "obsidian_vault/20_知识卡片/专利仿真/无线网络建模案例_结果产物/专利仿真_无线网络建模案例_结果产物_002.md",
+    "obsidian_vault/15_主题图谱/专利仿真/无线网络建模案例_结果产物.md",
+    "obsidian_vault/05_成果图谱/节点/源文件节点/论文无人机_核心场景与链路预算.md",
+    "总的obsidian知识库/20_交叉图谱/当前工程技术-文献对应总审查.md",
+    "obsidian_vault/10_总索引/论文无人机.md",
+    "obsidian_vault/15_主题图谱/论文无人机/总体背景.md",
+    "obsidian_vault/20_知识卡片/论文无人机/总体背景/论文无人机_总体背景_001.md",
+    "obsidian_vault/20_知识卡片/论文无人机/相关研究/论文无人机_相关研究_002.md",
+    "tools/obsidian/__pycache__/append_new_asset_line_mappings.cpython-312.pyc",
+    "tools/obsidian/append_new_asset_line_mappings.py",
+    "产出文件夹/论文无人机/README.md",
+    "12/output/measured_corner_compare/dryad/dryad_dense_heatmap.png",
+    "总的obsidian知识库/90_自动索引/postprocess_manifest.json",
+    "总的obsidian知识库/20_交叉图谱/产出文件夹导航.md",
+    "总的obsidian知识库/20_交叉图谱/代码级技术总览.md",
+    "产出文件夹/正向设计规范/车载低轨卫星通信系统EMC正向设计规范_专利与标准对照文件.docx",
+    "产出文件夹/正向设计规范/正向设计规范0312.docx",
+    "产出文件夹/正向设计规范/最终稿_车载低轨卫星通信系统EMC性能正向设计技术研究方案.docx",
+    "产出文件夹/正向设计规范/README.md",
+    "产出文件夹/正向设计规范/Q_FC_XXX-2025_车载低轨卫星通信系统EMC性能正向设计规范.docx",
+    "产出文件夹/专利自有/README.md",
+    "产出文件夹/专利一汽/README.md",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00088_SNR0.0_JSR6.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00087_SNR0.0_JSR9.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00086_SNR3.0_JSR3.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00077_SNR0.0_JSR3.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00076_SNR-5.0_JSR6.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00075_SNR-5.0_JSR9.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00068_SNR3.0_JSR9.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00067_SNR-5.0_JSR12.0.png",
+    "产出文件夹/论文卫星/LEO_Sim/LEO_Sim/LEO_Sim_V7/v7proj/dataset_stft_r2021a/test/mod/mod_00066_SNR3.0_JSR12.0.png",
+    "总的obsidian知识库/20_交叉图谱/新增资产融合导航.md",
+    "12/input_images/README.md"
+  ]
+}
