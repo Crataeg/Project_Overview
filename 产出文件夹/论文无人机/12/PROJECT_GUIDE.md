@@ -1,4 +1,4 @@
-# UAV Communication GA Project Guide
+﻿# UAV Communication GA Project Guide
 
 ## Active Files
 
@@ -16,7 +16,7 @@
 ## Archive / Reference
 
 - `__backup_before_upstream_20260302_143119/`：历史备份，不参与当前流程
-- `__upstream_UAV_GA_GAN/`：上游原始参考，不参与当前流程
+- `D:\论文无人机\UAV_GA_GAN\更新文件夹\20260323_GitHub上传下载归档\from_Project_Overview根目录\__upstream_UAV_GA_GAN\`：上游 GitHub 下载归档，不参与当前流程
 - `key reference/`：论文与参考资料
 
 ## Recommended Workflow
@@ -90,3 +90,5 @@
 - 保留：上面 `Active Files`、`.venv`、`.venv_sionna`、`output/<run_id>/`
 - 可清理：`output/*smoke*`、`output/__tmp_*`、临时 BLER csv、`__pycache__/`
 - 仅归档：`__backup_before_*`、`__upstream_*`
+
+

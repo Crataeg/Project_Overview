@@ -20,6 +20,13 @@ except Exception:
 
 
 ROOT = Path("D:/")
+PROJECT_ROOTS = {
+    "论文无人机": ROOT / "论文无人机" / "UAV_GA_GAN",
+    "论文卫星": ROOT / "论文卫星" / "LEO_Sim",
+    "专利一汽": ROOT / "专利一汽" / "LEO_EMCSim_Lab",
+    "专利自有": ROOT / "专利自有" / "LEO_Sim_Patent",
+    "正向设计规范": ROOT / "正向设计规范" / "Forward_Design",
+}
 TOTAL_VAULT = Path(r"D:\工程总览\总的obsidian知识库")
 
 TEXT_EXTS = {
@@ -90,6 +97,10 @@ def write_text(path: Path, text: str) -> None:
 
 def rel_link(from_path: Path, to_path: Path) -> str:
     return os.path.relpath(to_path, from_path.parent).replace("\\", "/")
+
+
+def project_root_for(project_name: str) -> Path:
+    return PROJECT_ROOTS.get(project_name, ROOT / project_name)
 
 
 def force_remove(path: Path) -> None:
@@ -442,7 +453,7 @@ def build_total_vault(projects: Sequence[ProjectSpec]) -> None:
 
     def task_note(project_name: str, task_type: str, label: str) -> Path:
         folder = "10_成果节点" if task_type == "成果" else "20_参考节点"
-        return ROOT / project_name / "obsidian知识库" / folder / f"{sanitize_name(label)}.md"
+        return project_root_for(project_name) / "obsidian知识库" / folder / f"{sanitize_name(label)}.md"
 
     overview = TOTAL_VAULT / "00_工程总览.md"
     fusion_nav = TOTAL_VAULT / "20_交叉图谱" / "新增资产融合导航.md"
@@ -455,7 +466,7 @@ def build_total_vault(projects: Sequence[ProjectSpec]) -> None:
         "",
     ]
     for spec in projects:
-        project_root = ROOT / spec.name
+        project_root = project_root_for(spec.name)
         project_note = project_root / "obsidian知识库" / "00_项目总览.md"
         lines.append(f"- [{spec.name}]({rel_link(overview, project_note)})：{spec.description}")
     lines.extend(
@@ -525,7 +536,7 @@ def build_total_vault(projects: Sequence[ProjectSpec]) -> None:
         "",
     ]
     for name in ["专利自有", "专利一汽", "论文卫星", "正向设计规范"]:
-        note = ROOT / name / "obsidian知识库" / "00_项目总览.md"
+        note = project_root_for(name) / "obsidian知识库" / "00_项目总览.md"
         lines.append(f"- [{name}]({rel_link(satellite_cross, note)})")
     write_text(satellite_cross, "\n".join(lines))
 
@@ -542,7 +553,7 @@ def build_total_vault(projects: Sequence[ProjectSpec]) -> None:
                 "",
                 "## 关联项目",
                 "",
-                f"- [论文无人机]({rel_link(uav_cross, ROOT / '论文无人机' / 'obsidian知识库' / '00_项目总览.md')})",
+                f"- [论文无人机]({rel_link(uav_cross, project_root_for('论文无人机') / 'obsidian知识库' / '00_项目总览.md')})",
                 f"- [卫星仿真与专利主线]({rel_link(uav_cross, satellite_cross)})",
             ]
         ),
@@ -640,7 +651,7 @@ PROJECTS: Sequence[ProjectSpec] = [
         tasks=[
             CopyTask(
                 label="一汽专利文本与附图",
-                src=r"D:\工程总览\tmp_leo_emcsim_lab_remote",
+                src=r"D:\专利一汽\LEO_EMCSim_Lab\更新文件夹\20260323_GitHub上传下载归档\from_Project_Overview根目录\tmp_leo_emcsim_lab_remote",
                 dest_rel=r"成果本身\专利文本与附图\专利一汽",
                 task_type="成果",
                 summary="该目录包含一汽专利项目的交底书、附图清单、SVG/PNG 附图和压缩包，是当前最直接的专利成果载体。",
@@ -1035,7 +1046,7 @@ def main() -> int:
     manifest: Dict[str, List[Dict]] = {"generated_at": [datetime.now().isoformat(timespec="seconds")]}
 
     for spec in PROJECTS:
-        project_root = ROOT / spec.name
+        project_root = project_root_for(spec.name)
         build_project_structure(project_root)
         results: List[TaskResult] = []
         for task in spec.tasks:
